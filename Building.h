@@ -1,4 +1,22 @@
+#pragma once
+
 #include <vector>
+
+enum BuildingType {
+    residencial,
+    utility,
+    unknown
+};
+
+BuildingType getBuildingType(char type) {
+    switch(type) {
+        case 'R':
+            return BuildingType::residencial;
+        case 'U':
+            return BuildingType::utility;
+    }
+    return BuildingType::unknown;
+}
 
 class Building {
     private:
@@ -23,19 +41,3 @@ class Building {
 };
 
 int Building::nextID = 1;
-
-enum BuildingType {
-    residencial,
-    utility,
-    unknown
-};
-
-BuildingType getBuildingType(char type) {
-    switch(type) {
-        case 'R':
-            return BuildingType::residencial;
-        case 'U':
-            return BuildingType::utility;
-    }
-    return BuildingType::unknown;
-}

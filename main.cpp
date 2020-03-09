@@ -1,20 +1,24 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <vector>
+#include <string>
 #include "Building.h"
 
 using namespace std;
 
 int manhattanDistance(Building b1, Building b2);
+void parseInput(string filename, vector<Building>&b);
+void assignBuildingsIDs(vector<Building>&b, unordered_map<int,Building*>& h);
 
 int main() {
 
     vector<Building> buildings;
     unordered_map<int, Building*> buildingsHashMap;
-    
-    parseInput("input.txt", buildings);
-    assignBuildingsIDs(buildings, buildingsHashMap);
 
+    parseInput("inputs/example.txt", buildings);
+    assignBuildingsIDs(buildings, buildingsHashMap);
+    
     return 0;
 }
 
