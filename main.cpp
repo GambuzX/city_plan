@@ -8,9 +8,7 @@
 
 using namespace std;
 
-int manhattanDistance(Plan b1, Plan b2);
-InputInfo parseInput(string filename, vector<Plan>&b);
-void assignBuildingsIDs(vector<Plan>&b, unordered_map<int,Plan**>& h);
+int manhattanDistance(Building b1, Building b2);
 
 int main() {
 
@@ -22,6 +20,6 @@ int main() {
     return 0;
 }
 
-int manhattanDistance(Plan b1, Plan b2) {
+int manhattanDistance(Building b1, Building b2) {
     return 0;
 }
