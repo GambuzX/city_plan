@@ -1,43 +1,14 @@
 #pragma once
-
-#include <vector>
-
-enum BuildingType {
-    residencial,
-    utility,
-    unknown
-};
-
-BuildingType getBuildingType(char type) {
-    switch(type) {
-        case 'R':
-            return BuildingType::residencial;
-        case 'U':
-            return BuildingType::utility;
-    }
-    return BuildingType::unknown;
-}
+#include "Plan.h"
 
 class Building {
     private:
-        int id;
-        BuildingType type;
-        int value;
-        std::vector<std::vector<char>> plan;
-        static int nextID;
-
+        Plan * plan;
+        int x, y;
     public:
-        Building(BuildingType type, int value, std::vector<std::vector<char>> plan) { 
-            this->id = nextID++;
-            this->type = type;
-            this->value = value;
+        Building(Plan * plan, int x, int y) {
             this->plan = plan;
+            this->x = x;
+            this->y = y;
         }
-
-        int getID() { return this->id; }
-        BuildingType getType() { return this->type; }
-        int getValue() { return this->value; }
-        std::vector<std::vector<char>> getPlan() { return plan; }
 };
-
-int Building::nextID = 1;
