@@ -11,4 +11,8 @@ class Building {
             this->x = x;
             this->y = y;
         }
+
+        int getX() const { return x; }
+        int getY() const { return y; }
+        Plan * getPlan() const { return plan; }
 };
