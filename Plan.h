@@ -37,7 +37,7 @@ class Plan {
         int getID() { return this->id; }
         BuildingType getType() { return this->type; }
         int getValue() { return this->value; }
-        std::vector<std::vector<char>> getPlan() { return plan; }
+        std::vector<std::vector<char>> getPlan() const { return plan; }
 };
 
 int Plan::nextID = 1;

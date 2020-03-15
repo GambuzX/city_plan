@@ -15,6 +15,13 @@ class State {
             cityMap = std::vector<std::vector<int>>(rows, std::vector<int>(cols, -1));
         }
 
+        State(const State &s){
+            this->buildings = s.getBuildings();
+            this->cityMap = s.getCityMap();
+            this->residentialBuildings = s.getResidentialBuildings();
+            this->utilityBuildings = s.getUtilityBuildings();
+        }
+
         bool canAddBuilding(Building & b) const {
             // check if can add
             // pre conditions
