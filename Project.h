@@ -8,17 +8,9 @@ enum BuildingType {
     unknown
 };
 
-BuildingType getBuildingType(char type) {
-    switch(type) {
-        case 'R':
-            return BuildingType::residencial;
-        case 'U':
-            return BuildingType::utility;
-    }
-    return BuildingType::unknown;
-}
+BuildingType getBuildingType(char type);
 
-class Plan {
+class Project {
     private:
         int id;
         BuildingType type;
@@ -27,7 +19,7 @@ class Plan {
         static int nextID;
 
     public:
-        Plan(BuildingType type, int value, std::vector<std::vector<char>> plan) { 
+        Project(BuildingType type, int value, std::vector<std::vector<char>> plan) { 
             this->id = nextID++;
             this->type = type;
             this->value = value;
@@ -39,5 +31,3 @@ class Plan {
         int getValue() { return this->value; }
         std::vector<std::vector<char>> getPlan() const { return plan; }
 };
-
-int Plan::nextID = 1;

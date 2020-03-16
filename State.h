@@ -28,8 +28,8 @@ class State {
             return true;
         }
 
-        void addBuilding(Plan * plan, int x, int y) {
-            buildings.push_back(Building(plan, x, y));
+        void addBuilding(Project * proj, int x, int y) {
+            buildings.push_back(Building(proj, x, y));
             // update city map with building index (buildings.size()-1)
         }
 

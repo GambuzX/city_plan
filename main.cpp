@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <climits>
 
 #include "State.h"
 #include "InputParse.h"
@@ -11,14 +12,14 @@ using namespace std;
 
 int buildingsDist(const Building & b1, const Building & b2);
 int value(const State & state, vector<int> utilityTypes, int D);
-State neighborhood(const State &state, const vector<Plan> &projects, const vector<int> &utilityTypes, const int &D);
-bool fits(const State &state, const Plan &plan, int x, int y);
+State neighborhood(const State &state, const vector<Project> &projects, const vector<int> &utilityTypes, const int &D);
+bool fits(const State &state, const Project &proj, int x, int y);
 
 int main() {
 
-    vector<Plan> bPlans;
+    vector<Project> bProjects;
 
-    InputInfo globalInfo = parseInput("inputs/example.txt", bPlans);
+    InputInfo globalInfo = parseInput("inputs/example.txt", bProjects);
     State initialState = State(globalInfo.rows, globalInfo.cols);
     
     return 0;
@@ -46,11 +47,11 @@ int value(const State & state, vector<int> utilityTypes, int D) {
                 const Building & utilBuilding = buildings[uIndex];
                 
                 // check if type matches and if is in range D
-                if (utilBuilding.getPlan()->getType() == utilityType &&
+                if (utilBuilding.getProject()->getType() == utilityType &&
                     buildingsDist(resBuilding, utilBuilding) <= D) {
 
                     // utility type exists, add points
-                    points += resBuilding.getPlan()->getValue();
+                    points += resBuilding.getProject()->getValue();
                     break;
                 }
             }
@@ -60,7 +61,7 @@ int value(const State & state, vector<int> utilityTypes, int D) {
     return points;
 }
 
-State neighborhood(const State &state, const vector<Plan> &plans, const vector<int> &utilityTypes, const int &D){
+State neighborhood(const State &state, const vector<Project> &projects, const vector<int> &utilityTypes, const int &D){
     State *best_state = NULL;
     int best_value = INT_MIN;
 
@@ -71,7 +72,7 @@ State neighborhood(const State &state, const vector<Plan> &plans, const vector<i
             if(map[i][j] != -1)
                 continue;
             
-            for(Plan p : plans){
+            for(Project p : projects){
                 if(fits(state, p, i, j)){
                     State* new_state = new State(state);
                     new_state->addBuilding(&p, i, j);
@@ -92,8 +93,8 @@ State neighborhood(const State &state, const vector<Plan> &plans, const vector<i
     return *best_state;
 }
 
-bool fits(const State &state, const Plan &plan, int x, int y){
-    vector<vector<char>> plan_map = plan.getPlan();
+bool fits(const State &state, const Project &proj, int x, int y){
+    vector<vector<char>> plan_map = proj.getPlan();
     vector<vector<int>> city_map = state.getCityMap();
     
     if(x + plan_map.size() >= city_map.size())

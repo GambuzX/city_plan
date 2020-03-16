@@ -3,7 +3,7 @@
 
 using namespace std;
 
-InputInfo parseInput(string filename, vector<Plan> & plans) {
+InputInfo parseInput(string filename, vector<Project> & projs) {
     ifstream inp(filename); // open file
 
     int nRows, nCols, maxWalkDist, nBuildProjs; // global vars
@@ -16,7 +16,7 @@ InputInfo parseInput(string filename, vector<Plan> & plans) {
         for (int row = 0; row < bRows; row++)
             for (int col = 0; col < bCols; col++)
                 inp >> plan[row][col];
-        plans.push_back(Plan(getBuildingType(type), val, plan));        
+        projs.push_back(Project(getBuildingType(type), val, plan));        
     }
     inp.close();
     return InputInfo(nRows, nCols, maxWalkDist);
