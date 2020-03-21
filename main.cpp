@@ -15,9 +15,9 @@ int value(const State & state, const InputInfo & i);
 int manhattanDistance(int x1, int y1, int x2, int y2);
 int buildingsDist(const Building & b1, const Building & b2);
 State neighborhood(const State &state, const vector<Project> &projects, const vector<int> &utilityTypes, const int &D);
-bool fits(const State &state, const Project &proj, int x, int y);
+bool fits(const vector<vector<int>> & map, Project *proj, int x, int y);
 State hillClimbing(const vector<Project> & p, const InputInfo & i, const State & s);
-State getHigherValueNeighbour(const vector<Project> & p, const InputInfo & i, const State & s);
+State getHigherValueNeighbour(const vector<Project> & projects, const InputInfo & globalInfo, const State & state);
 
 int main() {
 
@@ -98,7 +98,7 @@ int value(const State & state, const InputInfo & globalInfo) {
     return points;
 }
 
-State getHigherValueNeighbour(vector<Project> & projects, const InputInfo & globalInfo, const State & state){
+State getHigherValueNeighbour(const vector<Project> & projects, const InputInfo & globalInfo, const State & state){
     const vector<vector<int>> & map = state.getCityMap();
     int stateValue = value(state, globalInfo);
 
@@ -110,7 +110,7 @@ State getHigherValueNeighbour(vector<Project> & projects, const InputInfo & glob
             
             // try to build all projects
             for(int p = 0; p < projects.size(); p++) {
-                Project * currProject = &projects[p];
+                Project * currProject = (Project *) &projects[p];
 
                 if(fits(map, currProject, row, col)){
 
