@@ -20,9 +20,7 @@ State hillClimbing(const vector<Project> & p, const InputInfo & i, const State &
 State getHigherValueNeighbour(const vector<Project> & projects, const InputInfo & globalInfo, const State & state);
 
 int main() {
-
     vector<Project> bProjects;
-
     InputInfo globalInfo = parseInput("inputs/example.txt", bProjects);
     State initialState = State(globalInfo.rows, globalInfo.cols);
 
@@ -34,12 +32,21 @@ int main() {
 State hillClimbing(const vector<Project> & projects, const InputInfo & globalInfo, const State & initialState) {
 
     State currentState = initialState;
+    int previousValue, currentValue;
+    previousValue = currentValue = value(currentState, globalInfo);
+
+    cout << "[+] Starting hill climbing with value " << currentValue << endl;
     while(1) {
         State neighbour = getHigherValueNeighbour(projects, globalInfo, currentState);
+        currentValue = value(neighbour, globalInfo);
+        cout << "[+] Found neighbour: " << currentValue << endl;
 
-        if (value(neighbour, globalInfo) < value(currentState, globalInfo)) break;
-
+        if (currentValue < previousValue) {     
+            cout << "[+] Reached local maximum" << endl;
+            break;
+        }
         currentState = neighbour;
+        previousValue = currentValue;
     }
     
     return currentState;
@@ -63,7 +70,7 @@ int manhattanDistance(int x1, int y1, int x2, int y2) {
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
-int value(const State & state, const InputInfo & globalInfo) {
+int value(const State & state, const InputInfo & globalInfo) { //TODO must consider number of buildings also. more buildings is penalized
     const vector<int> & utilityTypes = globalInfo.allUtilities;
     const int D = globalInfo.maxWalkDist;
     

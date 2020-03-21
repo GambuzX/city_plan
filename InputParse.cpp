@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fstream>
 #include <unordered_set>
 #include "InputParse.h"
@@ -5,6 +6,7 @@
 using namespace std;
 
 InputInfo parseInput(string filename, vector<Project> & projs) {
+    cout << "[+] Parsing input" << endl;
     ifstream inp(filename); // open file
 
     int nRows, nCols, maxWalkDist, nBuildProjs; // global vars
