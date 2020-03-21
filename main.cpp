@@ -14,6 +14,7 @@ int buildingsDist(const Building & b1, const Building & b2);
 int value(const State & state, vector<int> utilityTypes, int D);
 State neighborhood(const State &state, const vector<Project> &projects, const vector<int> &utilityTypes, const int &D);
 bool fits(const State &state, const Project &proj, int x, int y);
+int hillClimbing(vector<Project> p, InputInfo i, State s);
 
 int main() {
 
@@ -21,7 +22,14 @@ int main() {
 
     InputInfo globalInfo = parseInput("inputs/example.txt", bProjects);
     State initialState = State(globalInfo.rows, globalInfo.cols);
+
+    hillClimbing(bProjects, globalInfo, initialState);
     
+    return 0;
+}
+
+int hillClimbing(vector<Project> projects, InputInfo globalInfo, State initialState) {
+
     return 0;
 }
 
@@ -31,20 +39,20 @@ int buildingsDist(const Building & b1, const Building & b2) {
 
 int value(const State & state, vector<int> utilityTypes, int D) {
     int points = 0;
-    const vector<Building> & buildings = state.getBuildings();
+    const unordered_map<uint, Building> & buildings = state.getBuildings();
     const vector<int> & resBuildings = state.getResidentialBuildings();
     const vector<int> & utilBuildings = state.getUtilityBuildings();
 
     // for all residential buildings
     for (int rIndex : resBuildings) { 
-        const Building & resBuilding = buildings[rIndex];
+        const Building & resBuilding = buildings.find(rIndex)->second;
 
         // check all utilities that exist
         for (int utilityType : utilityTypes) {
 
             // for all utility buildings
             for (int uIndex : utilBuildings) {
-                const Building & utilBuilding = buildings[uIndex];
+                const Building & utilBuilding = buildings.find(uIndex)->second;
                 
                 // check if type matches and if is in range D
                 if (utilBuilding.getProject()->getType() == utilityType &&

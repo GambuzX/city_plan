@@ -35,7 +35,7 @@ class State {
         }
 
         void addBuilding(Project * proj, int x, int y) {
-            buildings.insert(make_pair(nextID++, Building(proj, x, y)));
+            buildings.insert(std::make_pair(nextID++, Building(proj, x, y)));
             // update city map with building index (buildings.size()-1)
         }
 
