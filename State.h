@@ -1,21 +1,27 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 #include "Building.h"
+
+typedef unsigned int uint;
 
 class State {
     private:
-        std::vector<Building> buildings;
+        uint nextID;
+        std::unordered_map<uint, Building> buildings;
         std::vector<std::vector<int>> cityMap;
-        std::vector<int> residentialBuildings; // indexes of residential buildings
-        std::vector<int> utilityBuildings; // indexes of utility buildings
+        std::vector<int> residentialBuildings; // ids of residential buildings
+        std::vector<int> utilityBuildings; // ids of utility buildings
     public:
 
         State(int rows, int cols) {
-            cityMap = std::vector<std::vector<int>>(rows, std::vector<int>(cols, -1));
+            nextID = 1;
+            cityMap = std::vector<std::vector<int>>(rows, std::vector<int>(cols, 0));
         }
 
         State(const State &s){
+            this->nextID = s.getNextID();
             this->buildings = s.getBuildings();
             this->cityMap = s.getCityMap();
             this->residentialBuildings = s.getResidentialBuildings();
@@ -29,12 +35,13 @@ class State {
         }
 
         void addBuilding(Project * proj, int x, int y) {
-            buildings.push_back(Building(proj, x, y));
+            buildings.insert(make_pair(nextID++, Building(proj, x, y)));
             // update city map with building index (buildings.size()-1)
         }
 
-        const std::vector<Building> & getBuildings() const { return buildings; }
+        const uint getNextID() const { return nextID; }
+        const std::unordered_map<uint, Building> & getBuildings() const { return buildings; }
         const std::vector<std::vector<int>> & getCityMap() const { return cityMap; }
-        const std::vector<int> getResidentialBuildings() const { return residentialBuildings; }
-        const std::vector<int> getUtilityBuildings() const { return utilityBuildings; }
+        const std::vector<int> & getResidentialBuildings() const { return residentialBuildings; }
+        const std::vector<int> & getUtilityBuildings() const { return utilityBuildings; }
 };
