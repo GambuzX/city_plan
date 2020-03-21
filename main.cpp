@@ -4,17 +4,20 @@
 #include <string>
 #include <utility>
 #include <climits>
+#include <algorithm>
 
 #include "State.h"
 #include "InputParse.h"
 
 using namespace std;
 
+int value(const State & state, const InputInfo & i);
+int manhattanDistance(int x1, int y1, int x2, int y2);
 int buildingsDist(const Building & b1, const Building & b2);
-int value(const State & state, vector<int> utilityTypes, int D);
 State neighborhood(const State &state, const vector<Project> &projects, const vector<int> &utilityTypes, const int &D);
 bool fits(const State &state, const Project &proj, int x, int y);
-int hillClimbing(vector<Project> p, InputInfo i, State s);
+State hillClimbing(const vector<Project> & p, const InputInfo & i, const State & s);
+State getHigherValueNeighbour(const vector<Project> & p, const InputInfo & i, const State & s);
 
 int main() {
 
@@ -23,21 +26,47 @@ int main() {
     InputInfo globalInfo = parseInput("inputs/example.txt", bProjects);
     State initialState = State(globalInfo.rows, globalInfo.cols);
 
-    hillClimbing(bProjects, globalInfo, initialState);
+    State localMaximum = hillClimbing(bProjects, globalInfo, initialState);
     
     return 0;
 }
 
-int hillClimbing(vector<Project> projects, InputInfo globalInfo, State initialState) {
+State hillClimbing(const vector<Project> & projects, const InputInfo & globalInfo, const State & initialState) {
 
-    return 0;
+    State currentState = initialState;
+    while(1) {
+        State neighbour = getHigherValueNeighbour(projects, globalInfo, currentState);
+
+        if (value(neighbour, globalInfo) < value(currentState, globalInfo)) break;
+
+        currentState = neighbour;
+    }
+    
+    return currentState;
 }
 
 int buildingsDist(const Building & b1, const Building & b2) {
-    return 0;
+    int b1X = b1.getX(), b1Y = b1.getY(), b2X = b2.getX(), b2Y = b2.getY();
+    const vector<vector<char>> & b1Plan = b1.getProject()->getPlan();
+    const vector<vector<char>> & b2Plan = b2.getProject()->getPlan();
+
+    int dist = INT_MAX;
+    for (int row1 = b1Y; row1 < b1Y + b1Plan.size(); row1++)
+        for (int col1 = b1X; col1 < b1X + b1Plan[0].size(); col1++)
+            for (int row2 = b2Y; row2 < b2Y + b2Plan.size(); row2++)
+                for (int col2 = b2X; col2 < b2X + b2Plan[0].size(); col2++)
+                    dist = min(dist, manhattanDistance(row1,col1,row2,col2));
+    return dist;
 }
 
-int value(const State & state, vector<int> utilityTypes, int D) {
+int manhattanDistance(int x1, int y1, int x2, int y2) {
+    return abs(x1 - x2) + abs(y1 - y2);
+}
+
+int value(const State & state, const InputInfo & globalInfo) {
+    const vector<int> & utilityTypes = globalInfo.allUtilities;
+    const int D = globalInfo.maxWalkDist;
+    
     int points = 0;
     const unordered_map<uint, Building> & buildings = state.getBuildings();
     const vector<int> & resBuildings = state.getResidentialBuildings();
@@ -69,45 +98,83 @@ int value(const State & state, vector<int> utilityTypes, int D) {
     return points;
 }
 
-State neighborhood(const State &state, const vector<Project> &projects, const vector<int> &utilityTypes, const int &D){
-    State *best_state = NULL;
-    int best_value = INT_MIN;
+State getHigherValueNeighbour(vector<Project> & projects, const InputInfo & globalInfo, const State & state){
+    const vector<vector<int>> & map = state.getCityMap();
+    int stateValue = value(state, globalInfo);
 
-    vector<vector<int>> map = state.getCityMap();
-
-    for(size_t i = 0; i < map.size(); i++){
-        for(size_t j = 0; j < map[i].size(); j++){
-            if(map[i][j] != -1)
+    for(size_t row = 0; row < map.size(); row++){
+        for(size_t col = 0; col < map[row].size(); col++){
+            // check if empty
+            if(map[row][col] != 0)
                 continue;
             
-            for(Project p : projects){
-                if(fits(state, p, i, j)){
-                    State* new_state = new State(state);
-                    new_state->addBuilding(&p, i, j);
-                    int new_state_value = value(*new_state, utilityTypes, D);
+            // try to build all projects
+            for(int p = 0; p < projects.size(); p++) {
+                Project * currProject = &projects[p];
+
+                if(fits(map, currProject, row, col)){
+
+                    // create building and check its value
+                    State new_state = state;
+                    new_state.addBuilding(currProject, row, col);
+                    int new_state_value = value(new_state, globalInfo);
                     
-                    if(new_state_value > best_value){
-                        delete best_state;
-                        best_state = new_state;
-                        best_value = new_state_value;
-                    }else{
-                        delete new_state;
+                    // found better state
+                    if(new_state_value > stateValue){
+                        return new_state;
                     }
+
                 }
             }
         }
     }
 
-    return *best_state;
+    // did not find better neighbour
+    return state;
 }
 
-bool fits(const State &state, const Project &proj, int x, int y){
-    vector<vector<char>> plan_map = proj.getPlan();
-    vector<vector<int>> city_map = state.getCityMap();
+State getHighestValueNeighbor(vector<Project> & projects, const InputInfo & globalInfo, const State & state){
+    State best_state = state;
+    int best_value = INT_MIN;
+
+    const vector<vector<int>> & map = state.getCityMap();
+
+    for(size_t row = 0; row < map.size(); row++){
+        for(size_t col = 0; col < map[row].size(); col++){
+            // check if empty
+            if(map[row][col] != 0)
+                continue;
+            
+            // try to build all projects
+            for(int p = 0; p < projects.size(); p++) {
+                Project * currProject = &projects[p];
+
+                if(fits(map, currProject, row, col)){
+
+                    // create building and check its value
+                    State new_state = state;
+                    new_state.addBuilding(currProject, row, col);
+                    int new_state_value = value(new_state, globalInfo);
+                    
+                    if(new_state_value > best_value){
+                        best_state = new_state;
+                        best_value = new_state_value;
+                    }
+
+                }
+            }
+        }
+    }
+
+    return best_state;
+}
+
+bool fits(const vector<vector<int>> & map, Project *proj, int x, int y){
+    vector<vector<char>> plan_map = proj->getPlan();
     
-    if(x + plan_map.size() >= city_map.size())
+    if(x + plan_map.size() >= map.size())
         return false;
-    if(y + plan_map[0].size() >= city_map[0].size())
+    if(y + plan_map[0].size() >= map[0].size())
         return false;
     
     int line, column;
@@ -120,7 +187,7 @@ bool fits(const State &state, const Project &proj, int x, int y){
             line = x + i; 
             column = y + j;
 
-            if(city_map[line][column] != -1)
+            if(map[line][column] != -1)
                 return false;
         } 
     }
