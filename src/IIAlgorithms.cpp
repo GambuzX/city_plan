@@ -45,11 +45,11 @@ State getHigherValueNeighbour(const State & state){
             for(size_t p = 0; p < projects.size(); p++) {
                 Project * currProject = (Project *) &projects[p];
 
-                if(currProject->fits(map, row, col)){
+                if(state.canCreateBuilding(currProject, col, row)){ // x = col, y = row
 
                     // create building and check its value
                     State newState = state;
-                    newState.addBuilding(currProject, row, col);
+                    newState.createBuilding(currProject, col, row);
                     int newStateValue = newState.value();
                     
                     // found better state
@@ -84,11 +84,11 @@ State getHighestValueNeighbor(const State & state){
             for(size_t p = 0; p < projects.size(); p++) {
                 Project * currProject = (Project *) &projects[p];
 
-                if(currProject->fits(map, row, col)){
+                if(state.canCreateBuilding(currProject, col, row)){
 
                     // create building and check its value
                     State newState = state;
-                    newState.addBuilding(currProject, row, col);
+                    newState.createBuilding(currProject, col, row);
                     int newStateValue = newState.value();
                     
                     if(newStateValue > bestValue || 

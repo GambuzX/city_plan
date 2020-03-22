@@ -37,8 +37,8 @@ class State {
             this->utilityBuildings = s.getUtilityBuildings();
         }
 
-        bool canAddBuilding(Building & b) const;
-        void addBuilding(Project * proj, int x, int y);
+        bool canCreateBuilding(Project * proj, int x, int y) const;
+        void createBuilding(Project * proj, int x, int y);
         int value() const;
 
         uint getNextID() const { return nextID; }
