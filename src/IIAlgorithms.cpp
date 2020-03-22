@@ -18,7 +18,7 @@ State hillClimbing(const State & initialState) {
         currentValue = neighbour.value();
         cout << "[+] Found neighbour: " << currentValue << endl;
 
-        if (currentValue < previousValue) {     
+        if (currentValue <= previousValue) {     
             cout << "[+] Reached local maximum" << endl;
             break;
         }
@@ -42,7 +42,7 @@ State getHigherValueNeighbour(const State & state){
                 continue;
             
             // try to build all projects
-            for(int p = 0; p < projects.size(); p++) {
+            for(size_t p = 0; p < projects.size(); p++) {
                 Project * currProject = (Project *) &projects[p];
 
                 if(currProject->fits(map, row, col)){
@@ -53,7 +53,8 @@ State getHigherValueNeighbour(const State & state){
                     int newStateValue = newState.value();
                     
                     // found better state
-                    if(newStateValue > initialStateValue){
+                    if(newStateValue > initialStateValue || 
+                        (newStateValue == initialStateValue && newState.getEmptyCells() < state.getEmptyCells())){
                         return newState;
                     }
 
@@ -80,7 +81,7 @@ State getHighestValueNeighbor(const State & state){
                 continue;
             
             // try to build all projects
-            for(int p = 0; p < projects.size(); p++) {
+            for(size_t p = 0; p < projects.size(); p++) {
                 Project * currProject = (Project *) &projects[p];
 
                 if(currProject->fits(map, row, col)){
@@ -90,7 +91,8 @@ State getHighestValueNeighbor(const State & state){
                     newState.addBuilding(currProject, row, col);
                     int newStateValue = newState.value();
                     
-                    if(newStateValue > bestValue){
+                    if(newStateValue > bestValue || 
+                        (newStateValue == bestValue && newState.getEmptyCells() < bestState.getEmptyCells())){
                         bestState = newState;
                         bestValue = newStateValue;
                     }
