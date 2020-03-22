@@ -1,5 +1,6 @@
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 
 #include "State.h"
 
@@ -38,6 +39,10 @@ void State::createBuilding(Project * proj, int x, int y) {
             }
         }
     }
+
+    if (proj->getType == BuildingType::residencial) residentialBuildings.push_back(nextID);
+    if (proj->getType == BuildingType::utility) utilityBuildings.push_back(nextID);
+
     buildings.insert(make_pair(nextID++, Building(proj, x, y)));
 }
 
@@ -53,6 +58,13 @@ void State::removeBuilding(uint id) {
             cityMap[row][col] = 0;
         }
     }
+
+    if(it->second.getProject()->getType() == BuildingType::residencial)
+        residentialBuildings.erase(remove(residentialBuildings.begin(), residentialBuildings.end(), id), residentialBuildings.end()); 
+
+    if(it->second.getProject()->getType() == BuildingType::utility)
+        utilityBuildings.erase(remove(utilityBuildings.begin(), utilityBuildings.end(), id), utilityBuildings.end()); 
+
     buildings.erase(it);
 }
 

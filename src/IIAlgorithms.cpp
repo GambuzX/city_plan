@@ -112,9 +112,6 @@ State addBuildingOperator(const State & initialState, bool findBest){ //TODO con
 }
 
 State removeBuildingOperator(const State & initialState, bool findBest){
-    const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-    const vector<vector<uint>> & map = initialState.getCityMap();
-
     State bestState = initialState;
     int bestValue = initialState.value();
 
@@ -131,6 +128,44 @@ State removeBuildingOperator(const State & initialState, bool findBest){
             bestValue = newStateValue;
         }
 
+    }
+    return bestState;
+}
+
+State replaceBuildingOperator(const State & initialState, bool findBest){
+    const unordered_map<uint, Building> & buildings = initialState.getBuildings();
+    const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
+    const vector<vector<uint>> & map = initialState.getCityMap();
+
+    State bestState = initialState;
+    int bestValue = initialState.value();
+
+    vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
+    for (int b : buildingsIDs) {
+        unordered_map<uint, Building>::const_iterator it = buildings.find(b);
+        if(it == buildings.end()) continue;
+
+        // remove building so that it can be replaced
+        State newStateRemove = initialState;
+        newStateRemove.removeBuilding(b);
+
+        // try to replace removed building with all projects
+        for (size_t p = 0; p < projects.size(); p++) {
+            Project * proj = (Project*) &projects[p];
+            if(newStateRemove.canCreateBuilding(proj, it->second.getX(), it->second.getY())) {
+                State newStateReplace = newStateRemove;
+                newStateReplace.createBuilding(proj, it->second.getX(), it->second.getY());
+                int newStateValue = newStateReplace.value();
+
+                if(betterState(bestValue, bestState.emptyCount(), newStateValue, newStateReplace.emptyCount())) {
+                    if(!findBest) return newStateReplace;
+
+                    bestState = newStateReplace;
+                    bestValue = newStateValue;
+                }
+
+            }
+        }
     }
     return bestState;
 }
