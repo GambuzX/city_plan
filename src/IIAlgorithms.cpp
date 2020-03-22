@@ -6,7 +6,7 @@
 
 using namespace std;
 
-
+State randomStart(const State & initialState);
 State addBuildingOperator(const State & initialState, bool findBest);
 State removeBuildingOperator(const State & initialState, bool findBest);
 State replaceBuildingOperator(const State & initialState, bool findBest);
@@ -23,7 +23,7 @@ bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
 
 State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
 
-    State currentState = initialState; // random first choice, cuz no points. check both values at different steps
+    State currentState = randomStart(initialState); // random first choice, cuz no points. check both values at different steps
     int previousValue, currentValue;
     previousValue = currentValue = currentState.value();
 
@@ -44,12 +44,19 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
     return currentState;
 }
 
+State randomStart(const State & initialState) {
+    vector<Project> & projs = initialState.getGlobalInfo()->bProjects;
+    State newState = initialState;
+    newState.createBuilding(&projs[0], 0, 0);
+    return newState;
+}
+
 
 State higherValueNeighbour(const State & state, bool findBest){
     State * bestState = (State*) &state;
     int bestValue = state.value();
 
-    // Add building
+    // Add building. First because its the one who can score more points
     State addState = addBuildingOperator(state, findBest);
     int addStateValue = addState.value();
     if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
@@ -58,22 +65,22 @@ State higherValueNeighbour(const State & state, bool findBest){
         bestValue = addStateValue;
     }
 
-    // Remove building
-    State removeState = removeBuildingOperator(state, findBest);
-    int removeStateValue = removeState.value();
-    if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
-        if(!findBest) return removeState;
-        bestState = &removeState;
-        bestValue = removeStateValue;
-    }
-
-    // Replace building
+    // Replace building. Second because can still increase points
     State replaceState = replaceBuildingOperator(state, findBest);
     int replaceStateValue = replaceState.value();
     if(betterState(bestValue, bestState->emptyCount(), replaceStateValue, replaceState.emptyCount())) {
         if(!findBest) return replaceState;
         bestState = &replaceState;
         bestValue = replaceStateValue;
+    }
+
+    // Remove building. Can only improve by having same value and less occupied cells
+    State removeState = removeBuildingOperator(state, findBest);
+    int removeStateValue = removeState.value();
+    if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
+        if(!findBest) return removeState;
+        bestState = &removeState;
+        bestValue = removeStateValue;
     }
 
     return *bestState;
