@@ -6,6 +6,17 @@
 
 using namespace std;
 
+
+State addBuildingOperator(const State & initialState, bool findBest);
+State removeBuildingOperator(const State & initialState, bool findBest);
+State replaceBuildingOperator(const State & initialState, bool findBest);
+
+bool betterState(const State & s1, const State & s2) {
+    int s1Val = s1.value();
+    int s2Val = s2.value();
+    return s2Val > s1Val || (s2Val == s1Val && s2.emptyCount() < s1.emptyCount());
+}
+
 bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells < pEmptyCells);
 }
@@ -18,7 +29,7 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
 
     cout << "[+] Starting hill climbing with value " << currentValue << endl;
     while(1) {
-        State neighbour = higherValueNeighbour(currentState);
+        State neighbour = higherValueNeighbour(currentState, false);
         currentValue = neighbour.value();
         cout << "[+] Found neighbour: " << currentValue << endl;
 
@@ -34,44 +45,41 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
 }
 
 
-State higherValueNeighbour(const State & state){ //TODO consider removing and changing buildings
-    const vector<Project> & projects = state.getGlobalInfo()->bProjects;
-    const vector<vector<uint>> & map = state.getCityMap();
-    int initialStateValue = state.value();
+State higherValueNeighbour(const State & state, bool findBest){
+    State * bestState = (State*) &state;
+    int bestValue = state.value();
 
-    for(size_t row = 0; row < map.size(); row++){
-        for(size_t col = 0; col < map[row].size(); col++){
-            // check if empty
-            if(map[row][col] != 0)
-                continue;
-            
-            // try to build all projects
-            for(size_t p = 0; p < projects.size(); p++) {
-                Project * currProject = (Project *) &projects[p];
-
-                if(state.canCreateBuilding(currProject, col, row)){ // x = col, y = row
-
-                    // create building and check its value
-                    State newState = state;
-                    newState.createBuilding(currProject, col, row);
-                    int newStateValue = newState.value();
-                    
-                    // found better state
-                    if(newStateValue > initialStateValue || 
-                        (newStateValue == initialStateValue && newState.emptyCount() < state.emptyCount())){
-                        return newState;
-                    }
-
-                }
-            }
-        }
+    // Add building
+    State addState = addBuildingOperator(state, findBest);
+    int addStateValue = addState.value();
+    if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
+        if(!findBest) return addState;
+        bestState = &addState;
+        bestValue = addStateValue;
     }
 
-    // did not find better neighbour
-    return state;
+    // Remove building
+    State removeState = removeBuildingOperator(state, findBest);
+    int removeStateValue = removeState.value();
+    if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
+        if(!findBest) return removeState;
+        bestState = &removeState;
+        bestValue = removeStateValue;
+    }
+
+    // Replace building
+    State replaceState = replaceBuildingOperator(state, findBest);
+    int replaceStateValue = replaceState.value();
+    if(betterState(bestValue, bestState->emptyCount(), replaceStateValue, replaceState.emptyCount())) {
+        if(!findBest) return replaceState;
+        bestState = &replaceState;
+        bestValue = replaceStateValue;
+    }
+
+    return *bestState;
 }
 
-State addBuildingOperator(const State & initialState, bool findBest){ //TODO consider removing and changing buildings
+State addBuildingOperator(const State & initialState, bool findBest){
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
     const vector<vector<uint>> & map = initialState.getCityMap();
 
@@ -166,42 +174,5 @@ State replaceBuildingOperator(const State & initialState, bool findBest){
             }
         }
     }
-    return bestState;
-}
-
-State highestValueNeighbor(const State & state){
-    const vector<Project> & projects = state.getGlobalInfo()->bProjects;
-    const vector<vector<uint>> & map = state.getCityMap();
-    State bestState = state;
-    int bestValue = state.value();
-
-    for(size_t row = 0; row < map.size(); row++){
-        for(size_t col = 0; col < map[row].size(); col++){
-            // check if empty
-            if(map[row][col] != 0)
-                continue;
-            
-            // try to build all projects
-            for(size_t p = 0; p < projects.size(); p++) {
-                Project * currProject = (Project *) &projects[p];
-
-                if(state.canCreateBuilding(currProject, col, row)){
-
-                    // create building and check its value
-                    State newState = state;
-                    newState.createBuilding(currProject, col, row);
-                    int newStateValue = newState.value();
-                    
-                    if(newStateValue > bestValue || 
-                        (newStateValue == bestValue && newState.emptyCount() < bestState.emptyCount())){
-                        bestState = newState;
-                        bestValue = newStateValue;
-                    }
-
-                }
-            }
-        }
-    }
-
     return bestState;
 }
