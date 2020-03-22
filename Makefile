@@ -1,14 +1,28 @@
-C=gcc
-CXX=g++
-RM=rm -f
+EXE := city_plan
 
-SRCS=main.cpp Project.cpp InputParse.cpp
-OBJS=$(subst .cpp,.o,$(SRCS))
+SRC_DIR := src
+OBJ_DIR := obj
 
-all: tool
+SRC := $(wildcard $(SRC_DIR)/*.cpp)
+OBJ := $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-tool: $(OBJS)
-	$(CXX) -o city_plan $(OBJS)
+CPPFLAGS := -Iinclude
+CFLAGS   := -Wall
+LDFLAGS  := -Llib
+LDLIBS   := -lm
+
+.PHONY: all clean
+
+all: $(EXE)
+
+$(EXE): $(OBJ)
+	g++ $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+	g++ $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR):
+	mkdir $@
 
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(OBJ)

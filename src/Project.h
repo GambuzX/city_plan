@@ -30,4 +30,6 @@ class Project {
         BuildingType getType() { return this->type; }
         int getValue() { return this->value; }
         std::vector<std::vector<char>> getPlan() const { return plan; }
+
+        bool fits(const std::vector<std::vector<int>> & map, int x, int y);
 };

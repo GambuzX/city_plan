@@ -16,3 +16,7 @@ class Building {
         int getY() const { return y; }
         Project * getProject() const { return proj; }
 };
+
+
+int manhattanDistance(int x1, int y1, int x2, int y2);
+int buildingsDist(const Building & b1, const Building & b2);
