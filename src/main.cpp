@@ -8,7 +8,7 @@
 using namespace std;
 
 int main() {
-    InputInfo globalInfo = parseInput("inputs/example.txt");
+    InputInfo globalInfo = parseInput("inputs/a_example.in");
     State initialState = State(&globalInfo);
 
     State localMaximum = hillClimbing(initialState);
