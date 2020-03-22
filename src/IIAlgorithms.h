@@ -6,5 +6,5 @@ State hillClimbing(const State & initialState);
 State simulatedAnnealing(const State & initialState);
 State tabuSearch(const State & initialState);
 
-State getHigherValueNeighbour(const State & state);
-State getHighestValueNeighbour(const State & state);
+State higherValueNeighbour(const State & state);
+State highestValueNeighbour(const State & state);

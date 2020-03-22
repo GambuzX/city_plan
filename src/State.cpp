@@ -41,6 +41,21 @@ void State::createBuilding(Project * proj, int x, int y) {
     buildings.insert(make_pair(nextID++, Building(proj, x, y)));
 }
 
+void State::removeBuilding(uint id) {
+    unordered_map<uint, Building>::iterator it = buildings.find(id);
+    if (it == buildings.end()) return;
+
+    const Building & b = it->second;
+    const vector<vector<char>> & plan = b.getProject()->getPlan();
+    for (size_t row = b.getY(); row < plan.size(); row++) {
+        for (size_t col = b.getX(); col < plan[0].size(); col++) {
+            if (cityMap[row][col] != 0) emptyCells++;
+            cityMap[row][col] = 0;
+        }
+    }
+    buildings.erase(it);
+}
+
 int State::value() const {
     const vector<int> & utilityTypes = globalInfo->allUtilities;
     const int D = globalInfo->maxWalkDist;
@@ -71,4 +86,11 @@ int State::value() const {
     }
 
     return points;
+}
+
+
+vector<uint> State::getAllBuildingsIDs() const {
+    vector<uint> allIDs = residentialBuildings;
+    allIDs.insert(allIDs.end(), utilityBuildings.begin(), utilityBuildings.end());
+    return allIDs;
 }
