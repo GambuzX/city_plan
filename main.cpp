@@ -11,7 +11,8 @@
 
 using namespace std;
 
-int value(const State & state, const InputInfo & i);
+int buildingsValue(const State & state, const InputInfo & i);
+int stateValue(const State & state, const InputInfo & globalInfo);
 int manhattanDistance(int x1, int y1, int x2, int y2);
 int buildingsDist(const Building & b1, const Building & b2);
 State neighborhood(const State &state, const vector<Project> &projects, const vector<int> &utilityTypes, const int &D);
@@ -31,14 +32,14 @@ int main() {
 
 State hillClimbing(const vector<Project> & projects, const InputInfo & globalInfo, const State & initialState) {
 
-    State currentState = initialState;
+    State currentState = initialState; // random first choice, cuz no points. check both values at different steps
     int previousValue, currentValue;
-    previousValue = currentValue = value(currentState, globalInfo);
+    previousValue = currentValue = stateValue(currentState, globalInfo);
 
     cout << "[+] Starting hill climbing with value " << currentValue << endl;
     while(1) {
         State neighbour = getHigherValueNeighbour(projects, globalInfo, currentState);
-        currentValue = value(neighbour, globalInfo);
+        currentValue = stateValue(neighbour, globalInfo);
         cout << "[+] Found neighbour: " << currentValue << endl;
 
         if (currentValue < previousValue) {     
@@ -70,7 +71,7 @@ int manhattanDistance(int x1, int y1, int x2, int y2) {
     return abs(x1 - x2) + abs(y1 - y2);
 }
 
-int value(const State & state, const InputInfo & globalInfo) { //TODO must consider number of buildings also. more buildings is penalized
+int buildingsValue(const State & state, const InputInfo & globalInfo) { //TODO must consider number of buildings also. more buildings is penalized. or maybe number of occupied cells?
     const vector<int> & utilityTypes = globalInfo.allUtilities;
     const int D = globalInfo.maxWalkDist;
     
@@ -105,9 +106,20 @@ int value(const State & state, const InputInfo & globalInfo) { //TODO must consi
     return points;
 }
 
+int stateValue(const State & state, const InputInfo & globalInfo) {
+    const vector<vector<int>> & map = state.getCityMap();
+    int empty = 0;
+    for (const vector<int> & row : map)
+        for (int cell : row)
+            if (cell == 0)
+                empty++;
+
+    return empty + buildingsValue(state, globalInfo);
+}
+
 State getHigherValueNeighbour(const vector<Project> & projects, const InputInfo & globalInfo, const State & state){
     const vector<vector<int>> & map = state.getCityMap();
-    int stateValue = value(state, globalInfo);
+    int initialStateValue = stateValue(state, globalInfo);
 
     for(size_t row = 0; row < map.size(); row++){
         for(size_t col = 0; col < map[row].size(); col++){
@@ -124,10 +136,10 @@ State getHigherValueNeighbour(const vector<Project> & projects, const InputInfo 
                     // create building and check its value
                     State new_state = state;
                     new_state.addBuilding(currProject, row, col);
-                    int new_state_value = value(new_state, globalInfo);
+                    int new_state_value = stateValue(new_state, globalInfo);
                     
                     // found better state
-                    if(new_state_value > stateValue){
+                    if(new_state_value > initialStateValue){
                         return new_state;
                     }
 
@@ -161,7 +173,7 @@ State getHighestValueNeighbor(vector<Project> & projects, const InputInfo & glob
                     // create building and check its value
                     State new_state = state;
                     new_state.addBuilding(currProject, row, col);
-                    int new_state_value = value(new_state, globalInfo);
+                    int new_state_value = stateValue(new_state, globalInfo);
                     
                     if(new_state_value > best_value){
                         best_state = new_state;
