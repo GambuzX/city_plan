@@ -40,8 +40,8 @@ void State::createBuilding(Project * proj, int x, int y) {
         }
     }
 
-    if (proj->getType == BuildingType::residencial) residentialBuildings.push_back(nextID);
-    if (proj->getType == BuildingType::utility) utilityBuildings.push_back(nextID);
+    if (proj->getType() == BuildingType::residencial) residentialBuildings.push_back(nextID);
+    if (proj->getType() == BuildingType::utility) utilityBuildings.push_back(nextID);
 
     buildings.insert(make_pair(nextID++, Building(proj, x, y)));
 }

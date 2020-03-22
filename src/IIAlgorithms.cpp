@@ -135,7 +135,6 @@ State removeBuildingOperator(const State & initialState, bool findBest){
 State replaceBuildingOperator(const State & initialState, bool findBest){
     const unordered_map<uint, Building> & buildings = initialState.getBuildings();
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-    const vector<vector<uint>> & map = initialState.getCityMap();
 
     State bestState = initialState;
     int bestValue = initialState.value();
