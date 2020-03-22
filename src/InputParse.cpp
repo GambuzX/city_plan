@@ -5,7 +5,7 @@
 
 using namespace std;
 
-InputInfo parseInput(string filename, vector<Project> & projs) {
+InputInfo parseInput(string filename) {
     cout << "[+] Parsing input" << endl;
     ifstream inp(filename); // open file
 
@@ -13,6 +13,7 @@ InputInfo parseInput(string filename, vector<Project> & projs) {
     char type; int bRows, bCols, val; // building vars
     unordered_set<int> seenUtilities;
     vector<int> allUtilities;
+    vector<Project> projs;
 
     inp >> nRows >> nCols >> maxWalkDist >> nBuildProjs;
     for (int p = 0; p < nBuildProjs; p++) {
@@ -30,5 +31,5 @@ InputInfo parseInput(string filename, vector<Project> & projs) {
         }      
     }
     inp.close();
-    return InputInfo(nRows, nCols, maxWalkDist, allUtilities);
+    return InputInfo(nRows, nCols, maxWalkDist, allUtilities, projs);
 }
