@@ -21,12 +21,16 @@ bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
 }
 
+// TODO detect states where value remains the same and buildings can be added. if points are the same, search for the first position where one building can be added
+// TODO only consider inserting in positions < D
+// TODO do not copy states, instead apply change and then the reverse at the end
+
 State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;
     //initialState.printMap();
 
-    cout << "[+] Choosing first building" << endl;
+    cout << "[+] Choosing first building" << endl << endl;
     State currentState = randomStart(initialState); // random first choice, cuz no points. check both values at different steps
     //currentState.printMap();
     int previousValue, currentValue;
@@ -34,6 +38,8 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
 
 
     while(1) {
+            
+        cout << "[+] Searching for neighbour" << endl;
         State neighbour = higherValueNeighbour(currentState, false);
         currentValue = neighbour.value();
 
@@ -43,7 +49,7 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
             break;
         }
 
-        cout << "[+] Found neighbour: " << currentValue << endl;
+        cout << "[+] Found neighbour: " << currentValue << endl << endl;
         //neighbour.printMap();
         currentState = neighbour;
         previousValue = currentValue;
@@ -65,30 +71,33 @@ State higherValueNeighbour(const State & state, bool findBest){
     int bestValue = state.value();
 
     // Add building. First because its the one who can score more points
+    cout << "[!] Applying ADD operator" << endl;
     State addState = addBuildingOperator(state, findBest);
     int addStateValue = addState.value();
     if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
-        cout << "[!] Found better state by building project, value: " << addStateValue << endl;
+        cout << "[!] Found better state by building, value: " << addStateValue << endl;
         if(!findBest) return addState;
         bestState = &addState;
         bestValue = addStateValue;
     }
 
     // Replace building. Second because can still increase points
+    cout << "[!] Applying REPLACE operator" << endl;
     State replaceState = replaceBuildingOperator(state, findBest);
     int replaceStateValue = replaceState.value();
     if(betterState(bestValue, bestState->emptyCount(), replaceStateValue, replaceState.emptyCount())) {
-        cout << "[!] Found better state by replacing project, value: " << replaceStateValue << endl;
+        cout << "[!] Found better state by replacing, value: " << replaceStateValue << endl;
         if(!findBest) return replaceState;
         bestState = &replaceState;
         bestValue = replaceStateValue;
     }
 
     // Remove building. Can only improve by having same value and less occupied cells
+    cout << "[!] Applying REMOVE operator" << endl;
     State removeState = removeBuildingOperator(state, findBest);
     int removeStateValue = removeState.value();
     if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
-        cout << "[!] Found better state by removing project, value: " << removeStateValue << endl;
+        cout << "[!] Found better state by removing, value: " << removeStateValue << endl;
         if(!findBest) return removeState;
         bestState = &removeState;
         bestValue = removeStateValue;
@@ -130,7 +139,7 @@ State addBuildingOperator(const State & initialState, bool findBest){
                         bestValue = newStateValue;
                     }
 
-                }
+                } 
             }
         }
     }
