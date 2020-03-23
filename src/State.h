@@ -41,6 +41,7 @@ class State {
         void createBuilding(Project * proj, int x, int y);
         void removeBuilding(uint id);
         int value() const;
+        void printMap() const;
 
         uint getNextID() const { return nextID; }
         uint emptyCount() const { return emptyCells; }

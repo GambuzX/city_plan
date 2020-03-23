@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
@@ -13,14 +14,17 @@ bool State::canCreateBuilding(Project * proj, int x, int y) const {
 
     if (x < 0 || y < 0) 
         return false;   
-    if(x + plan.size() >= cityMap.size())
+    if(y + plan.size() > cityMap.size())
         return false;
-    if(y + plan[0].size() >= cityMap[0].size())
+    if(x + plan[0].size() > cityMap[0].size())
         return false;
 
-    for (size_t row = y; row < plan.size(); row++) {
-        for (size_t col = x; col < plan[0].size(); col++) {
-            if (plan[row][col] == '#' && cityMap[row][col] != 0) {
+    int cityRow, cityCol;
+    for (size_t row = 0; row < plan.size(); row++) {
+        for (size_t col = 0; col < plan[0].size(); col++) {
+            cityRow = y+row;
+            cityCol = x+col;
+            if (plan[row][col] == '#' && cityMap[cityRow][cityCol] != 0) {
                 return false;
             }
         }
@@ -31,11 +35,15 @@ bool State::canCreateBuilding(Project * proj, int x, int y) const {
 
 void State::createBuilding(Project * proj, int x, int y) {
     const vector<vector<char>> & plan = proj->getPlan();
-    for (size_t row = y; row < plan.size(); row++) {
-        for (size_t col = x; col < plan[0].size(); col++) {
-            if (plan[row][col] == '#') {                
-                if (cityMap[row][col] == 0) emptyCells--;
-                cityMap[row][col] = nextID;
+
+    int cityRow, cityCol;
+    for (size_t row = 0; row < plan.size(); row++) {
+        for (size_t col = 0; col < plan[0].size(); col++) {
+            if (plan[row][col] == '#') {              
+                cityRow = y+row;
+                cityCol = x+col;
+                if (cityMap[cityRow][cityCol] == 0) emptyCells--;
+                cityMap[cityRow][cityCol] = nextID;
             }
         }
     }
@@ -51,9 +59,10 @@ void State::removeBuilding(uint id) {
     if (it == buildings.end()) return;
 
     const Building & b = it->second;
+    int x = b.getX(), y = b.getY();
     const vector<vector<char>> & plan = b.getProject()->getPlan();
-    for (size_t row = b.getY(); row < plan.size(); row++) {
-        for (size_t col = b.getX(); col < plan[0].size(); col++) {
+    for (size_t row = y; row < y + plan.size(); row++) {
+        for (size_t col = x; col < x + plan[0].size(); col++) {
             if (cityMap[row][col] != 0) emptyCells++;
             cityMap[row][col] = 0;
         }
@@ -105,4 +114,15 @@ vector<uint> State::getAllBuildingsIDs() const {
     vector<uint> allIDs = residentialBuildings;
     allIDs.insert(allIDs.end(), utilityBuildings.begin(), utilityBuildings.end());
     return allIDs;
+}
+
+void State::printMap() const {
+    const vector<vector<uint>> & m = cityMap;
+    for (const vector<uint> & row : m) {
+        for (int cell : row) {
+            cout << cell << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
 }

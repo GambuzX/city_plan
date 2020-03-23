@@ -14,29 +14,37 @@ State replaceBuildingOperator(const State & initialState, bool findBest);
 bool betterState(const State & s1, const State & s2) {
     int s1Val = s1.value();
     int s2Val = s2.value();
-    return s2Val > s1Val || (s2Val == s1Val && s2.emptyCount() < s1.emptyCount());
+    return s2Val > s1Val || (s2Val == s1Val && s2.emptyCount() > s1.emptyCount());
 }
 
 bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
-    return nValue > pValue || (nValue == pValue && nEmptyCells < pEmptyCells);
+    return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
 }
 
 State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
 
+    cout << "[+] Starting hill climbing" << endl;
+    //initialState.printMap();
+
+    cout << "[+] Choosing first building" << endl;
     State currentState = randomStart(initialState); // random first choice, cuz no points. check both values at different steps
+    //currentState.printMap();
     int previousValue, currentValue;
     previousValue = currentValue = currentState.value();
 
-    cout << "[+] Starting hill climbing with value " << currentValue << endl;
+
     while(1) {
         State neighbour = higherValueNeighbour(currentState, false);
         currentValue = neighbour.value();
-        cout << "[+] Found neighbour: " << currentValue << endl;
 
         if (currentValue <= previousValue) {     
-            cout << "[+] Reached local maximum" << endl;
+            cout << "[+] Reached local maximum: " << currentValue << endl;
+            //neighbour.printMap();
             break;
         }
+
+        cout << "[+] Found neighbour: " << currentValue << endl;
+        //neighbour.printMap();
         currentState = neighbour;
         previousValue = currentValue;
     }
@@ -60,6 +68,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     State addState = addBuildingOperator(state, findBest);
     int addStateValue = addState.value();
     if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
+        cout << "[!] Found better state by building project, value: " << addStateValue << endl;
         if(!findBest) return addState;
         bestState = &addState;
         bestValue = addStateValue;
@@ -69,6 +78,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     State replaceState = replaceBuildingOperator(state, findBest);
     int replaceStateValue = replaceState.value();
     if(betterState(bestValue, bestState->emptyCount(), replaceStateValue, replaceState.emptyCount())) {
+        cout << "[!] Found better state by replacing project, value: " << replaceStateValue << endl;
         if(!findBest) return replaceState;
         bestState = &replaceState;
         bestValue = replaceStateValue;
@@ -78,6 +88,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     State removeState = removeBuildingOperator(state, findBest);
     int removeStateValue = removeState.value();
     if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
+        cout << "[!] Found better state by removing project, value: " << removeStateValue << endl;
         if(!findBest) return removeState;
         bestState = &removeState;
         bestValue = removeStateValue;
@@ -111,7 +122,7 @@ State addBuildingOperator(const State & initialState, bool findBest){
                     int newStateValue = newState.value();
                     
                     if(betterState(bestValue, bestState.emptyCount(), newStateValue, newState.emptyCount())) {
-                        
+
                         // if only want a better solution return immediatelly
                         if(!findBest) return newState;
 
@@ -166,6 +177,8 @@ State replaceBuildingOperator(const State & initialState, bool findBest){
         // try to replace removed building with all projects
         for (size_t p = 0; p < projects.size(); p++) {
             Project * proj = (Project*) &projects[p];
+            if(it->second.getProject()->getID() == proj->getID()) continue;
+
             if(newStateRemove.canCreateBuilding(proj, it->second.getX(), it->second.getY())) {
                 State newStateReplace = newStateRemove;
                 newStateReplace.createBuilding(proj, it->second.getX(), it->second.getY());
