@@ -19,24 +19,12 @@ class State {
         uint minRow, maxRow, minCol, maxCol; //TODO store available cells?
     public:
 
-        State(InputInfo * globalInfo) {
-            int rows = globalInfo->rows;
-            int cols = globalInfo->cols;
-            this->globalInfo = globalInfo;
-            nextID = 1;
-            emptyCells = rows*cols;
-            cityMap = std::vector<std::vector<uint>>(rows, std::vector<uint>(cols, 0));
-        }
+        State(InputInfo * globalInfo);
 
-        State(const State &s){
-            this->nextID = s.getNextID();
-            this->emptyCells = s.emptyCount();
-            this->globalInfo = s.getGlobalInfo();
-            this->buildings = s.getBuildings();
-            this->cityMap = s.getCityMap();
-            this->residentialBuildings = s.getResidentialBuildings();
-            this->utilityBuildings = s.getUtilityBuildings();
-        }
+        State(const State &s);
+
+        State(std::vector<std::vector<uint>> v1, std::unordered_map<uint, Building> um1, uint max_id1, 
+              std::vector<std::vector<uint>> v2, std::unordered_map<uint, Building> um2, InputInfo *globalInfo);
 
         bool addRandomBuilding();
         bool canCreateBuilding(Project * proj, uint row, uint col) const;

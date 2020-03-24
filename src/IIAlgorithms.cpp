@@ -1,9 +1,10 @@
 #include <vector>
 #include <iostream>
 #include <climits>
-#include <utility>
+#include <tuple>
 
 #include "IIAlgorithms.h"
+#include "util.h"
 
 using namespace std;
 
@@ -225,32 +226,31 @@ State replaceBuildingOperator(const State & initialState, bool findBest){
     return bestState;
 }
 
-template <class T>
-vector<T> concatenate_vectors(const vector<T> &v1, const vector<T> &v2){
-    vector<T> r = v1;
-    r.insert(r.end(), v2.begin(), v2.end());
-    return r;
-}
-
 State breeding(const State &s1, const State &s2){
     uint num_rows = s1.getGlobalInfo()->rows;
     uint mid_row = num_rows / 2;
     uint num_cols = s1.getGlobalInfo()->cols;
 
-    pair<vector<vector<uint>>, vector<vector<uint>>> s1_results = divideState(s1, num_rows, mid_row, num_cols);
-    pair<vector<vector<uint>>, vector<vector<uint>>> s2_results = divideState(s2, num_rows, mid_row, num_cols);
+    tuple<vector<vector<uint>>, vector<vector<uint>>, uint> s1_results = divideState(s1, num_rows, mid_row, num_cols);
+    tuple<vector<vector<uint>>, vector<vector<uint>>, uint> s2_results = divideState(s2, num_rows, mid_row, num_cols);
     
-    vector<vector<uint>> res_1 = concatenate_vectors(s1_results.first, s2_results.second);
-    vector<vector<uint>> res_2 = concatenate_vectors(s2_results.first, s1_results.second);
+    State new_s1 = State(get<0>(s1_results), s1.getBuildings(), get<2>(s1_results), get<1>(s2_results), s2.getBuildings(), s1.getGlobalInfo());
+    State new_s2 = State(get<0>(s2_results), s2.getBuildings(), get<2>(s2_results), get<1>(s1_results), s1.getBuildings(), s2.getGlobalInfo());
     
+    if(new_s1.value() >= new_s2.value())
+        return new_s1;
+    
+    return new_s2;
 }
 
-pair<vector<vector<uint>>, vector<vector<uint>>> divideState(const State &s, const uint &num_rows, const uint &mid_row, const uint &num_cols){
+tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State &s, const uint &num_rows, const uint &mid_row, const uint &num_cols){
     vector<uint> buildingIDs = s.getAllBuildingsIDs();
     unordered_map<uint, Building> buildings = s.getBuildings();
 
     vector<vector<uint>> top = vector<vector<uint>>(mid_row, vector<uint>(num_cols, 0));
     vector<vector<uint>> bottom = vector<vector<uint>>(num_rows-mid_row, vector<uint>(num_cols, 0));
+
+    uint top_max_id = 0;
 
     for(size_t i = 0; i < buildingIDs.size(); i++){
         Building b = buildings.at(buildingIDs[i]);
@@ -262,6 +262,8 @@ pair<vector<vector<uint>>, vector<vector<uint>>> divideState(const State &s, con
                         top[b.getRow() + j][b.getCol() + k] = b.getProject()->getID();
                     }
                 }
+                if(buildingIDs[i] > top_max_id)
+                    top_max_id = buildingIDs[i];
             }else
                 continue;
             
@@ -274,5 +276,5 @@ pair<vector<vector<uint>>, vector<vector<uint>>> divideState(const State &s, con
         }
     } 
 
-    return make_pair(top, bottom);
+    return make_tuple(top, bottom, top_max_id);
 }
