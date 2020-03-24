@@ -118,7 +118,7 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
 
     Project * bProject;
     uint bEmptyCount = state.emptyCount();
-    int bX, bY, bValue = initialValue;
+    int bRow, bCol, bValue = initialValue;
 
     for(size_t row = 0; row < map.size(); row++){
         for(size_t col = 0; col < map[row].size(); col++){
@@ -130,10 +130,10 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
             for(size_t p = 0; p < projects.size(); p++) {
                 Project * currProject = (Project *) &projects[p];
 
-                if(state.canCreateBuilding(currProject, col, row)){ // x = col, y = row
+                if(state.canCreateBuilding(currProject, row, col)){ // x = col, y = row
 
                     // create building and check its value
-                    uint newBuildingID = state.createBuilding(currProject, col, row);
+                    uint newBuildingID = state.createBuilding(currProject, row, col);
 
                     int newStateValue = state.value();                    
                     if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
@@ -143,8 +143,8 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
 
                         // assign variables
                         bProject = currProject;
-                        bX = col;
-                        bY = row;
+                        bRow = row;
+                        bCol = col;
                         bValue = newStateValue;
                         bEmptyCount = state.emptyCount();
                     }
@@ -157,7 +157,7 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
     }
     // reached a better solution
     if(betterState(initialValue, state.emptyCount(), bValue, bEmptyCount)) {
-        state.createBuilding(bProject, bX, bY);
+        state.createBuilding(bProject, bRow, bCol);
         return state;
     }
 
@@ -206,9 +206,9 @@ State replaceBuildingOperator(const State & initialState, bool findBest){
             Project * proj = (Project*) &projects[p];
             if(it->second.getProject()->getID() == proj->getID()) continue;
 
-            if(newStateRemove.canCreateBuilding(proj, it->second.getX(), it->second.getY())) {
+            if(newStateRemove.canCreateBuilding(proj, it->second.getRow(), it->second.getCol())) {
                 State newStateReplace = newStateRemove;
-                newStateReplace.createBuilding(proj, it->second.getX(), it->second.getY());
+                newStateReplace.createBuilding(proj, it->second.getRow(), it->second.getCol());
                 int newStateValue = newStateReplace.value();
 
                 if(betterState(bestValue, bestState.emptyCount(), newStateValue, newStateReplace.emptyCount())) {

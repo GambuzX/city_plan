@@ -7,7 +7,7 @@
 using namespace std;
 
 int buildingsDist(const Building & b1, const Building & b2) {
-    int b1X = b1.getX(), b1Y = b1.getY(), b2X = b2.getX(), b2Y = b2.getY();
+    int b1X = b1.getCol(), b1Y = b1.getRow(), b2X = b2.getCol(), b2Y = b2.getRow();
     const vector<vector<char>> & b1Plan = b1.getProject()->getPlan();
     const vector<vector<char>> & b2Plan = b2.getProject()->getPlan();
 
@@ -20,6 +20,10 @@ int buildingsDist(const Building & b1, const Building & b2) {
     return dist;
 }
 
-int manhattanDistance(int x1, int y1, int x2, int y2) {
-    return abs(x1 - x2) + abs(y1 - y2);
+int manhattanDistance(uint row1, uint col1, uint row2, uint col2) {
+    int s1 = row1 > row2 ? row1 - row2 : row2 - row1;
+    int s2 = col1 > col2 ? col1 - col2 : col2 - col1;
+    return s1+s2;
 }
+
+// TODO forma inicial de ter solucao

@@ -4,19 +4,19 @@
 class Building {
     private:
         Project * proj;
-        int x, y; //left top corner
+        uint row, col; //left top corner
     public:
-        Building(Project * proj, int x, int y) {
+        Building(Project * proj, uint row, uint col) {
             this->proj = proj;
-            this->x = x;
-            this->y = y;
+            this->row = row;
+            this->col = col;
         }
 
-        int getX() const { return x; }
-        int getY() const { return y; }
+        uint getRow() const { return row; }
+        uint getCol() const { return col; }
         Project * getProject() const { return proj; }
 };
 
 
-int manhattanDistance(int x1, int y1, int x2, int y2);
+int manhattanDistance(uint row1, uint col1, uint row2, uint col2);
 int buildingsDist(const Building & b1, const Building & b2);
