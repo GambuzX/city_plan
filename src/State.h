@@ -16,6 +16,7 @@ class State {
         std::vector<std::vector<uint>> cityMap;
         std::vector<uint> residentialBuildings; // ids of residential buildings
         std::vector<uint> utilityBuildings; // ids of utility buildings
+        uint minX, minY, maxX, maxY; //TODO store available cells?
     public:
 
         State(InputInfo * globalInfo) {
@@ -37,8 +38,9 @@ class State {
             this->utilityBuildings = s.getUtilityBuildings();
         }
 
+        bool addRandomBuilding();
         bool canCreateBuilding(Project * proj, int x, int y) const;
-        void createBuilding(Project * proj, int x, int y);
+        uint createBuilding(Project * proj, int x, int y);
         void removeBuilding(uint id);
         int value() const;
         void printMap() const;

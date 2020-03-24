@@ -33,7 +33,8 @@ bool State::canCreateBuilding(Project * proj, int x, int y) const {
     return true;
 }
 
-void State::createBuilding(Project * proj, int x, int y) {
+uint State::createBuilding(Project * proj, int x, int y) {
+    uint ID = nextID++;
     const vector<vector<char>> & plan = proj->getPlan();
 
     int cityRow, cityCol;
@@ -43,15 +44,16 @@ void State::createBuilding(Project * proj, int x, int y) {
                 cityRow = y+row;
                 cityCol = x+col;
                 if (cityMap[cityRow][cityCol] == 0) emptyCells--;
-                cityMap[cityRow][cityCol] = nextID;
+                cityMap[cityRow][cityCol] = ID;
             }
         }
     }
 
-    if (proj->getType() == BuildingType::residencial) residentialBuildings.push_back(nextID);
-    if (proj->getType() == BuildingType::utility) utilityBuildings.push_back(nextID);
+    if (proj->getType() == BuildingType::residencial) residentialBuildings.push_back(ID);
+    if (proj->getType() == BuildingType::utility) utilityBuildings.push_back(ID);
 
-    buildings.insert(make_pair(nextID++, Building(proj, x, y)));
+    buildings.insert(make_pair(ID, Building(proj, x, y)));
+    return ID;
 }
 
 void State::removeBuilding(uint id) {
@@ -125,4 +127,28 @@ void State::printMap() const {
         cout << endl;
     }
     cout << endl;
+}
+
+bool State::addRandomBuilding() {
+    vector<Project> & projs = getGlobalInfo()->bProjects;
+    const vector<vector<uint>> & map = getCityMap();
+
+    for(size_t row = 0; row < map.size(); row++){
+        for(size_t col = 0; col < map[row].size(); col++){
+            // already occupied
+            if(map[row][col] != 0)
+                continue;
+
+            // find some project to add
+            for (size_t i = 0; i < projs.size(); i++) {
+                if(canCreateBuilding(&projs[i], col, row)) {
+                    createBuilding(&projs[i], col, row);
+                    return true;
+                }
+            }
+        }
+    }    
+
+    // couldnt add anything
+    return false;
 }

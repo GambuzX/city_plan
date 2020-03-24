@@ -7,7 +7,7 @@
 using namespace std;
 
 State randomStart(const State & initialState);
-State addBuildingOperator(const State & initialState, bool findBest, bool forceAdd);
+State addBuildingOperator(const State & initialState, bool findBest);
 State removeBuildingOperator(const State & initialState, bool findBest);
 State replaceBuildingOperator(const State & initialState, bool findBest);
 
@@ -35,7 +35,6 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
     int previousValue, currentValue;
     previousValue = currentValue = currentState.value();
 
-    bool forceAdded = false;
     while(1) {
             
         cout << "[+] Searching for neighbour" << endl;
@@ -43,11 +42,9 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
         currentValue = neighbour.value();
 
         if (currentValue <= previousValue) {     
-            if(currentValue == previousValue && !forceAdded) {
-                cout << "[+] Forcefully adding a building" << endl << endl;
-                currentState = addBuildingOperator(currentState, false, true);
+            if(currentValue == previousValue && currentState.addRandomBuilding()) {
+                cout << "[+] Added a random building" << endl << endl;
                 previousValue = currentState.value();
-                forceAdded = true;
                 continue;
             }
             cout << "[+] Reached local maximum: " << currentValue << endl;
@@ -59,13 +56,12 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
         //neighbour.printMap();
         currentState = neighbour;
         previousValue = currentValue;
-        forceAdded = false;
     }
     
     return currentState;
 }
 
-State randomStart(const State & initialState) {
+State randomStart(const State & initialState) { // TODO not random. should it be?
     vector<Project> & projs = initialState.getGlobalInfo()->bProjects;
     State newState = initialState;
     newState.createBuilding(&projs[0], 0, 0);
@@ -79,7 +75,7 @@ State higherValueNeighbour(const State & state, bool findBest){
 
     // Add building. First because its the one who can score more points
     cout << "[!] Applying ADD operator" << endl;
-    State addState = addBuildingOperator(state, findBest, false);
+    State addState = addBuildingOperator(state, findBest);
     int addStateValue = addState.value();
     if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
         cout << "[!] Found better state by building, value: " << addStateValue << endl;
@@ -113,12 +109,16 @@ State higherValueNeighbour(const State & state, bool findBest){
     return *bestState;
 }
 
-State addBuildingOperator(const State & initialState, bool findBest = false, bool forceAdd = false){
+State addBuildingOperator(const State & initialState, bool findBest = false){
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
     const vector<vector<uint>> & map = initialState.getCityMap();
 
-    State bestState = initialState;
-    int bestValue = initialState.value();
+    State state = initialState;
+    int initialValue = state.value();
+
+    Project * bProject;
+    uint bEmptyCount = state.emptyCount();
+    int bX, bY, bValue = initialValue;
 
     for(size_t row = 0; row < map.size(); row++){
         for(size_t col = 0; col < map[row].size(); col++){
@@ -130,31 +130,38 @@ State addBuildingOperator(const State & initialState, bool findBest = false, boo
             for(size_t p = 0; p < projects.size(); p++) {
                 Project * currProject = (Project *) &projects[p];
 
-                if(initialState.canCreateBuilding(currProject, col, row)){ // x = col, y = row
+                if(state.canCreateBuilding(currProject, col, row)){ // x = col, y = row
 
                     // create building and check its value
-                    State newState = initialState;
-                    newState.createBuilding(currProject, col, row);
+                    uint newBuildingID = state.createBuilding(currProject, col, row);
 
-                    // want to add any building whether its better or not
-                    if(forceAdd) return newState;
-
-                    int newStateValue = newState.value();
-                    
-                    if(betterState(bestValue, bestState.emptyCount(), newStateValue, newState.emptyCount())) {
+                    int newStateValue = state.value();                    
+                    if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
 
                         // if only want a better solution return immediatelly
-                        if(!findBest) return newState;
+                        if(!findBest) return state;
 
-                        bestState = newState;
-                        bestValue = newStateValue;
+                        // assign variables
+                        bProject = currProject;
+                        bX = col;
+                        bY = row;
+                        bValue = newStateValue;
+                        bEmptyCount = state.emptyCount();
                     }
 
+                    // remove building to maintain state
+                    state.removeBuilding(newBuildingID);
                 } 
             }
         }
     }
-    return bestState;
+    // reached a better solution
+    if(betterState(initialValue, state.emptyCount(), bValue, bEmptyCount)) {
+        state.createBuilding(bProject, bX, bY);
+        return state;
+    }
+
+    return initialState;
 }
 
 State removeBuildingOperator(const State & initialState, bool findBest){
