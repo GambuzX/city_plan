@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <climits>
+#include <utility>
 
 #include "IIAlgorithms.h"
 
@@ -224,20 +225,54 @@ State replaceBuildingOperator(const State & initialState, bool findBest){
     return bestState;
 }
 
+template <class T>
+vector<T> concatenate_vectors(const vector<T> &v1, const vector<T> &v2){
+    vector<T> r = v1;
+    r.insert(r.end(), v2.begin(), v2.end());
+    return r;
+}
+
 State breeding(const State &s1, const State &s2){
     uint num_rows = s1.getGlobalInfo()->rows;
     uint mid_row = num_rows / 2;
     uint num_cols = s1.getGlobalInfo()->cols;
 
-    vector<vector<uint>> s1_top = vector<vector<uint>>(mid_row, vector<uint>(num_cols, 0));
-    vector<vector<uint>> s1_bottom = vector<vector<uint>>(num_rows-mid_row, vector<uint>(num_cols, 0));
-    vector<vector<uint>> s1_top = vector<vector<uint>>(mid_row, vector<uint>(num_cols, 0));
-    vector<vector<uint>> s1_top = vector<vector<uint>>(num_rows-mid_row, vector<uint>(num_cols, 0));
+    pair<vector<vector<uint>>, vector<vector<uint>>> s1_results = divideState(s1, num_rows, mid_row, num_cols);
+    pair<vector<vector<uint>>, vector<vector<uint>>> s2_results = divideState(s2, num_rows, mid_row, num_cols);
     
-    vector<uint> s1_buildingIDs = s1.getAllBuildingsIDs();
-    unordered_map<uint, Building> s1_buildings = s1.getBuildings();
+    vector<vector<uint>> res_1 = concatenate_vectors(s1_results.first, s2_results.second);
+    vector<vector<uint>> res_2 = concatenate_vectors(s2_results.first, s1_results.second);
+    
+}
 
-    for(size_t i = 0; i < s1_buildings.size(); i++){
-        Building b = s1_buildings.at(s1_buildings[i]);
+pair<vector<vector<uint>>, vector<vector<uint>>> divideState(const State &s, const uint &num_rows, const uint &mid_row, const uint &num_cols){
+    vector<uint> buildingIDs = s.getAllBuildingsIDs();
+    unordered_map<uint, Building> buildings = s.getBuildings();
+
+    vector<vector<uint>> top = vector<vector<uint>>(mid_row, vector<uint>(num_cols, 0));
+    vector<vector<uint>> bottom = vector<vector<uint>>(num_rows-mid_row, vector<uint>(num_cols, 0));
+
+    for(size_t i = 0; i < buildingIDs.size(); i++){
+        Building b = buildings.at(buildingIDs[i]);
+
+        if(b.getRow() < mid_row){
+            if(b.getRow() + b.getProject()->getPlan().size() <= mid_row){
+                for(size_t j = 0; j < b.getProject()->getPlan().size(); j++){
+                    for(size_t k = 0; k < b.getProject()->getPlan()[0].size(); k++){
+                        top[b.getRow() + j][b.getCol() + k] = b.getProject()->getID();
+                    }
+                }
+            }else
+                continue;
+            
+        }else{
+            for(size_t j = 0; j < b.getProject()->getPlan().size(); j++){
+                for(size_t k = 0; k < b.getProject()->getPlan()[0].size(); k++){
+                    bottom[b.getRow() + j - mid_row][b.getCol() + k] = b.getProject()->getID();
+                }
+            }
+        }
     } 
+
+    return make_pair(top, bottom);
 }
