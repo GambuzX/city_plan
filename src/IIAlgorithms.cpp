@@ -7,7 +7,7 @@
 using namespace std;
 
 State randomStart(const State & initialState);
-State addBuildingOperator(const State & initialState, bool findBest);
+State addBuildingOperator(const State & initialState, bool findBest, bool forceAdd);
 State removeBuildingOperator(const State & initialState, bool findBest);
 State replaceBuildingOperator(const State & initialState, bool findBest);
 
@@ -21,7 +21,6 @@ bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
 }
 
-// TODO detect states where value remains the same and buildings can be added. if points are the same, search for the first position where one building can be added
 // TODO only consider inserting in positions < D
 // TODO do not copy states, instead apply change and then the reverse at the end
 
@@ -36,7 +35,7 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
     int previousValue, currentValue;
     previousValue = currentValue = currentState.value();
 
-
+    bool forceAdded = false;
     while(1) {
             
         cout << "[+] Searching for neighbour" << endl;
@@ -44,6 +43,13 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
         currentValue = neighbour.value();
 
         if (currentValue <= previousValue) {     
+            if(currentValue == previousValue && !forceAdded) {
+                cout << "[+] Forcefully adding a building" << endl << endl;
+                currentState = addBuildingOperator(currentState, false, true);
+                previousValue = currentState.value();
+                forceAdded = true;
+                continue;
+            }
             cout << "[+] Reached local maximum: " << currentValue << endl;
             //neighbour.printMap();
             break;
@@ -53,6 +59,7 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
         //neighbour.printMap();
         currentState = neighbour;
         previousValue = currentValue;
+        forceAdded = false;
     }
     
     return currentState;
@@ -72,7 +79,7 @@ State higherValueNeighbour(const State & state, bool findBest){
 
     // Add building. First because its the one who can score more points
     cout << "[!] Applying ADD operator" << endl;
-    State addState = addBuildingOperator(state, findBest);
+    State addState = addBuildingOperator(state, findBest, false);
     int addStateValue = addState.value();
     if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
         cout << "[!] Found better state by building, value: " << addStateValue << endl;
@@ -106,7 +113,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     return *bestState;
 }
 
-State addBuildingOperator(const State & initialState, bool findBest){
+State addBuildingOperator(const State & initialState, bool findBest = false, bool forceAdd = false){
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
     const vector<vector<uint>> & map = initialState.getCityMap();
 
@@ -128,6 +135,10 @@ State addBuildingOperator(const State & initialState, bool findBest){
                     // create building and check its value
                     State newState = initialState;
                     newState.createBuilding(currProject, col, row);
+
+                    // want to add any building whether its better or not
+                    if(forceAdd) return newState;
+
                     int newStateValue = newState.value();
                     
                     if(betterState(bestValue, bestState.emptyCount(), newStateValue, newState.emptyCount())) {
