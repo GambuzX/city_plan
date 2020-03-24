@@ -121,9 +121,9 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
     int bRow, bCol, bValue = initialValue;
 
     int minRow = max(0, initialState.getMinRow()-D);
-    int maxRow = initialState.getMaxRow() + D;
+    int maxRow = min((int)map.size()-1, initialState.getMaxRow() + D);
     int minCol = max(0, initialState.getMinCol()-D);
-    int maxCol = initialState.getMaxCol() + D;
+    int maxCol = min((int)map[0].size()-1, initialState.getMaxCol() + D);
 
     for(int row = minRow; row <= maxRow; row++){
         for(int col = minCol; col <= maxCol; col++){
