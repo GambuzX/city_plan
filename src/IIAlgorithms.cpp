@@ -237,7 +237,14 @@ State breeding(const State &s1, const State &s2){
     State new_s1 = State(get<0>(s1_results), s1.getBuildings(), get<2>(s1_results), get<1>(s2_results), s2.getBuildings(), s1.getGlobalInfo());
     State new_s2 = State(get<0>(s2_results), s2.getBuildings(), get<2>(s2_results), get<1>(s1_results), s1.getBuildings(), s2.getGlobalInfo());
     
-    if(new_s1.value() >= new_s2.value())
+    int v1 = new_s1.value();
+    int v2 = new_s2.value();
+    if(v1 > v2)
+        return new_s1;
+    if(v2 > v1)
+        return new_s2;
+
+    if(new_s1.emptyCount() >= new_s2.emptyCount())
         return new_s1;
     
     return new_s2;
