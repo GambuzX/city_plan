@@ -223,3 +223,21 @@ State replaceBuildingOperator(const State & initialState, bool findBest){
     }
     return bestState;
 }
+
+State breeding(const State &s1, const State &s2){
+    uint num_rows = s1.getGlobalInfo()->rows;
+    uint mid_row = num_rows / 2;
+    uint num_cols = s1.getGlobalInfo()->cols;
+
+    vector<vector<uint>> s1_top = vector<vector<uint>>(mid_row, vector<uint>(num_cols, 0));
+    vector<vector<uint>> s1_bottom = vector<vector<uint>>(num_rows-mid_row, vector<uint>(num_cols, 0));
+    vector<vector<uint>> s1_top = vector<vector<uint>>(mid_row, vector<uint>(num_cols, 0));
+    vector<vector<uint>> s1_top = vector<vector<uint>>(num_rows-mid_row, vector<uint>(num_cols, 0));
+    
+    vector<uint> s1_buildingIDs = s1.getAllBuildingsIDs();
+    unordered_map<uint, Building> s1_buildings = s1.getBuildings();
+
+    for(size_t i = 0; i < s1_buildings.size(); i++){
+        Building b = s1_buildings.at(s1_buildings[i]);
+    } 
+}
