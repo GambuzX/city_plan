@@ -122,6 +122,12 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
 
     for(size_t row = 0; row < map.size(); row++){
         for(size_t col = 0; col < map[row].size(); col++){
+
+            // position not at distance D from other buildings
+            if(!state.isPositionNearBuildings(row, col)) {
+                continue;
+            }
+
             // check if empty
             if(map[row][col] != 0)
                 continue;
@@ -137,7 +143,6 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
 
                     int newStateValue = state.value();                    
                     if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
-
                         // if only want a better solution return immediatelly
                         if(!findBest) return state;
 

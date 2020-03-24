@@ -48,10 +48,19 @@ uint State::createBuilding(Project * proj, uint row, uint col) {
     if (proj->getType() == BuildingType::residencial) residentialBuildings.push_back(ID);
     if (proj->getType() == BuildingType::utility) utilityBuildings.push_back(ID);
 
-    minRow = min(minRow, row);
-    maxRow = max(maxRow, (uint) (row + plan.size()));
-    minCol = min(minCol, col);
-    maxCol = max(maxCol, (uint) (col + plan[0].size()));
+    // update map limits
+    if(buildings.size() == 0) {
+        minRow = row;
+        maxRow = (uint) (row + plan.size() - 1);
+        minCol = col;
+        maxCol = (uint) (col + plan[0].size() - 1);
+    }
+    else {
+        minRow = min(minRow, row);
+        maxRow = max(maxRow, (uint) (row + plan.size() - 1));
+        minCol = min(minCol, col);
+        maxCol = max(maxCol, (uint) (col + plan[0].size() - 1));
+    }
 
     buildings.insert(make_pair(ID, Building(proj, row, col)));
     return ID;
@@ -62,10 +71,11 @@ void State::removeBuilding(uint id) {
     if (it == buildings.end()) return;
 
     const Building & b = it->second;
-    int x = b.getCol(), y = b.getRow();
     const vector<vector<char>> & plan = b.getProject()->getPlan();
-    for (size_t row = y; row < y + plan.size(); row++) {
-        for (size_t col = x; col < x + plan[0].size(); col++) {
+    uint x = b.getCol(), y = b.getRow();
+    uint endX=x+plan[0].size()-1, endY=y+plan.size()-1;
+    for (size_t row = y; row <= endY; row++) {
+        for (size_t col = x; col <= endX; col++) {
             if (cityMap[row][col] != 0) emptyCells++;
             cityMap[row][col] = 0;
         }
@@ -77,7 +87,75 @@ void State::removeBuilding(uint id) {
     if(it->second.getProject()->getType() == BuildingType::utility)
         utilityBuildings.erase(remove(utilityBuildings.begin(), utilityBuildings.end(), id), utilityBuildings.end()); 
 
+    updateMapLimits(y, endY, x, endX);
     buildings.erase(it);
+}
+
+void State::updateMapLimits(uint sRow, uint eRow, uint sCol, uint eCol) {
+    if (sCol == minCol) {
+        for(uint col = minCol; col <= maxCol; col++) {
+            bool bExists = false;
+            for(uint row = minRow; row <= maxRow; row++) {
+                if (cityMap[row][col] != 0) {
+                    bExists = true;
+                    break;
+                }
+            }
+            if(bExists) break;
+
+            // no building exists in this column
+            minCol++;
+        }
+    }
+
+    if(eCol == maxCol) {
+        for(uint col = maxCol; col >= minCol; col--) {
+            bool bExists = false;
+            for(uint row = minRow; row <= maxRow; row++) {
+                if (cityMap[row][col] != 0) {
+                    bExists = true;
+                    break;
+                }
+            }
+            if(bExists) break;
+
+            // no building exists in this column
+            maxCol--;
+        }
+    }
+
+    if (sRow == minRow) {
+        for(uint row = minRow; row <= maxRow; row++) {
+            bool bExists = false;
+            for(uint col = minCol; col <= maxCol; col++) {
+                if (cityMap[row][col] != 0) {
+                    bExists = true;
+                    break;
+                }
+            }
+            if(bExists) break;
+
+            // no building exists in this column
+            minRow++;
+        }
+    }
+
+    if (eRow == maxRow) {
+        for(uint row = maxRow; row >= minRow; row--) {
+            bool bExists = false;
+            for(uint col = minCol; col <= maxCol; col++) {
+                if (cityMap[row][col] != 0) {
+                    bExists = true;
+                    break;
+                }
+            }
+            if(bExists) break;
+
+            // no building exists in this column
+            maxRow--;
+        }
+    }
+
 }
 
 int State::value() const {
@@ -152,4 +230,15 @@ bool State::addRandomBuilding() {
 
     // couldnt add anything
     return false;
+}
+
+bool State::isPositionNearBuildings(uint row, uint col) const {
+    if(buildings.size() == 0) return true;
+    int D = getGlobalInfo()->maxWalkDist;
+
+    // careful with unsigned int and underflows
+    return (minRow-D <= row || minRow <= row) && 
+            (row <= maxRow+D || row <= maxRow) && 
+            (minCol-D <= col || minCol <= col) && 
+            (col <= maxCol+D || col <= maxCol);
 }
