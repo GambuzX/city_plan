@@ -23,9 +23,6 @@ bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
 }
 
-// TODO only consider inserting in positions < D
-// TODO do not copy states, instead apply change and then the reverse at the end
-
 State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;
@@ -79,6 +76,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     cout << "[!] Applying ADD operator" << endl;
     State addState = addBuildingOperator(state, findBest);
     int addStateValue = addState.value();
+
     if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
         cout << "[!] Found better state by building, value: " << addStateValue << endl;
         if(!findBest) return addState;
@@ -112,6 +110,7 @@ State higherValueNeighbour(const State & state, bool findBest){
 }
 
 State addBuildingOperator(const State & initialState, bool findBest = false){
+    int D = initialState.getGlobalInfo()->maxWalkDist;
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
     const vector<vector<uint>> & map = initialState.getCityMap();
 
@@ -122,8 +121,14 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
     uint bEmptyCount = state.emptyCount();
     int bRow, bCol, bValue = initialValue;
 
-    for(size_t row = 0; row < map.size(); row++){
-        for(size_t col = 0; col < map[row].size(); col++){
+    int minRow = max(0, initialState.getMinRow()-D);
+    int maxRow = min((int)map.size()-1, initialState.getMaxRow() + D);
+    int minCol = max(0, initialState.getMinCol()-D);
+    int maxCol = min((int)map[0].size()-1, initialState.getMaxCol() + D);
+
+    for(int row = minRow; row <= maxRow; row++){
+        for(int col = minCol; col <= maxCol; col++){
+
             // check if empty
             if(map[row][col] != 0)
                 continue;
@@ -136,10 +141,9 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
 
                     // create building and check its value
                     uint newBuildingID = state.createBuilding(currProject, row, col);
-
                     int newStateValue = state.value();                    
-                    if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
 
+                    if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
                         // if only want a better solution return immediatelly
                         if(!findBest) return state;
 
@@ -166,7 +170,7 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
     return initialState;
 }
 
-State removeBuildingOperator(const State & initialState, bool findBest){
+State removeBuildingOperator(const State & initialState, bool findBest){ // TODO do not copy states, instead apply change and then the reverse at the end
     State bestState = initialState;
     int bestValue = initialState.value();
 
@@ -262,7 +266,7 @@ tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State 
     for(size_t i = 0; i < buildingIDs.size(); i++){
         Building b = buildings.at(buildingIDs[i]);
 
-        if(b.getRow() < mid_row){
+        if(b.getRow() < (int)mid_row){
             if(b.getRow() + b.getProject()->getPlan().size() <= mid_row){
                 for(size_t j = 0; j < b.getProject()->getPlan().size(); j++){
                     for(size_t k = 0; k < b.getProject()->getPlan()[0].size(); k++){
