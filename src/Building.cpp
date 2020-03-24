@@ -20,7 +20,7 @@ int buildingsDist(const Building & b1, const Building & b2) {
     return dist;
 }
 
-int manhattanDistance(uint row1, uint col1, uint row2, uint col2) {
+int manhattanDistance(int row1, int col1, int row2, int col2) {
     int s1 = row1 > row2 ? row1 - row2 : row2 - row1;
     int s2 = col1 > col2 ? col1 - col2 : col2 - col1;
     return s1+s2;

@@ -21,7 +21,6 @@ bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
 }
 
-// TODO only consider inserting in positions < D
 // TODO do not copy states, instead apply change and then the reverse at the end
 
 State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
@@ -110,6 +109,7 @@ State higherValueNeighbour(const State & state, bool findBest){
 }
 
 State addBuildingOperator(const State & initialState, bool findBest = false){
+    int D = initialState.getGlobalInfo()->maxWalkDist;
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
     const vector<vector<uint>> & map = initialState.getCityMap();
 
@@ -120,13 +120,13 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
     uint bEmptyCount = state.emptyCount();
     int bRow, bCol, bValue = initialValue;
 
-    for(size_t row = 0; row < map.size(); row++){
-        for(size_t col = 0; col < map[row].size(); col++){
+    int minRow = max(0, initialState.getMinRow()-D);
+    int maxRow = initialState.getMaxRow() + D;
+    int minCol = max(0, initialState.getMinCol()-D);
+    int maxCol = initialState.getMaxCol() + D;
 
-            // position not at distance D from other buildings
-            if(!state.isPositionNearBuildings(row, col)) {
-                continue;
-            }
+    for(int row = minRow; row <= maxRow; row++){
+        for(int col = minCol; col <= maxCol; col++){
 
             // check if empty
             if(map[row][col] != 0)

@@ -7,7 +7,7 @@
 
 using namespace std;
 
-bool State::canCreateBuilding(Project * proj, uint row, uint col) const {
+bool State::canCreateBuilding(Project * proj, int row, int col) const {
 
     const vector<vector<char>> & plan = proj->getPlan();
 
@@ -29,7 +29,7 @@ bool State::canCreateBuilding(Project * proj, uint row, uint col) const {
     return true;
 }
 
-uint State::createBuilding(Project * proj, uint row, uint col) {
+uint State::createBuilding(Project * proj, int row, int col) {
     uint ID = nextID++;
     const vector<vector<char>> & plan = proj->getPlan();
 
@@ -57,9 +57,9 @@ uint State::createBuilding(Project * proj, uint row, uint col) {
     }
     else {
         minRow = min(minRow, row);
-        maxRow = max(maxRow, (uint) (row + plan.size() - 1));
+        maxRow = max(maxRow, row + (int) plan.size() - 1);
         minCol = min(minCol, col);
-        maxCol = max(maxCol, (uint) (col + plan[0].size() - 1));
+        maxCol = max(maxCol, col + (int) plan[0].size() - 1);
     }
 
     buildings.insert(make_pair(ID, Building(proj, row, col)));
@@ -72,10 +72,10 @@ void State::removeBuilding(uint id) {
 
     const Building & b = it->second;
     const vector<vector<char>> & plan = b.getProject()->getPlan();
-    uint x = b.getCol(), y = b.getRow();
-    uint endX=x+plan[0].size()-1, endY=y+plan.size()-1;
-    for (size_t row = y; row <= endY; row++) {
-        for (size_t col = x; col <= endX; col++) {
+    int x = b.getCol(), y = b.getRow();
+    int endX=x+plan[0].size()-1, endY=y+plan.size()-1;
+    for (int row = y; row <= endY; row++) {
+        for (int col = x; col <= endX; col++) {
             if (cityMap[row][col] != 0) emptyCells++;
             cityMap[row][col] = 0;
         }
@@ -91,11 +91,11 @@ void State::removeBuilding(uint id) {
     buildings.erase(it);
 }
 
-void State::updateMapLimits(uint sRow, uint eRow, uint sCol, uint eCol) {
+void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol) {
     if (sCol == minCol) {
-        for(uint col = minCol; col <= maxCol; col++) {
+        for(int col = minCol; col <= maxCol; col++) {
             bool bExists = false;
-            for(uint row = minRow; row <= maxRow; row++) {
+            for(int row = minRow; row <= maxRow; row++) {
                 if (cityMap[row][col] != 0) {
                     bExists = true;
                     break;
@@ -109,9 +109,9 @@ void State::updateMapLimits(uint sRow, uint eRow, uint sCol, uint eCol) {
     }
 
     if(eCol == maxCol) {
-        for(uint col = maxCol; col >= minCol; col--) {
+        for(int col = maxCol; col >= minCol; col--) {
             bool bExists = false;
-            for(uint row = minRow; row <= maxRow; row++) {
+            for(int row = minRow; row <= maxRow; row++) {
                 if (cityMap[row][col] != 0) {
                     bExists = true;
                     break;
@@ -125,9 +125,9 @@ void State::updateMapLimits(uint sRow, uint eRow, uint sCol, uint eCol) {
     }
 
     if (sRow == minRow) {
-        for(uint row = minRow; row <= maxRow; row++) {
+        for(int row = minRow; row <= maxRow; row++) {
             bool bExists = false;
-            for(uint col = minCol; col <= maxCol; col++) {
+            for(int col = minCol; col <= maxCol; col++) {
                 if (cityMap[row][col] != 0) {
                     bExists = true;
                     break;
@@ -141,9 +141,9 @@ void State::updateMapLimits(uint sRow, uint eRow, uint sCol, uint eCol) {
     }
 
     if (eRow == maxRow) {
-        for(uint row = maxRow; row >= minRow; row--) {
+        for(int row = maxRow; row >= minRow; row--) {
             bool bExists = false;
-            for(uint col = minCol; col <= maxCol; col++) {
+            for(int col = minCol; col <= maxCol; col++) {
                 if (cityMap[row][col] != 0) {
                     bExists = true;
                     break;
@@ -232,13 +232,13 @@ bool State::addRandomBuilding() {
     return false;
 }
 
-bool State::isPositionNearBuildings(uint row, uint col) const {
+bool State::isPositionNearBuildings(int row, int col) const {
     if(buildings.size() == 0) return true;
     int D = getGlobalInfo()->maxWalkDist;
 
     // careful with unsigned int and underflows
-    return (minRow-D <= row || minRow <= row) && 
-            (row <= maxRow+D || row <= maxRow) && 
-            (minCol-D <= col || minCol <= col) && 
-            (col <= maxCol+D || col <= maxCol);
+    return max(minRow-D,0) <= row && 
+            row <= maxRow+D && 
+            max(minCol-D,0) <= col && 
+            col <= maxCol+D;
 }

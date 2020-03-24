@@ -16,9 +16,9 @@ class State {
         std::vector<std::vector<uint>> cityMap;
         std::vector<uint> residentialBuildings; // ids of residential buildings
         std::vector<uint> utilityBuildings; // ids of utility buildings
-        uint minRow, maxRow, minCol, maxCol; //TODO store available cells?
+        int minRow, maxRow, minCol, maxCol;
 
-        void updateMapLimits(uint sRow, uint eRow, uint sCol, uint eCol);
+        void updateMapLimits(int sRow, int eRow, int sCol, int eCol);
     public:
 
         State(InputInfo * globalInfo) {
@@ -46,12 +46,12 @@ class State {
         }
 
         bool addRandomBuilding();
-        bool canCreateBuilding(Project * proj, uint row, uint col) const;
-        uint createBuilding(Project * proj, uint row, uint col);
+        bool canCreateBuilding(Project * proj, int row, int col) const;
+        uint createBuilding(Project * proj, int row, int col);
         void removeBuilding(uint id);
         int value() const;
         void printMap() const;
-        bool isPositionNearBuildings(uint row, uint col) const;
+        bool isPositionNearBuildings(int row, int col) const;
 
         uint getNextID() const { return nextID; }
         uint emptyCount() const { return emptyCells; }
@@ -61,8 +61,8 @@ class State {
         const std::vector<uint> & getResidentialBuildings() const { return residentialBuildings; }
         const std::vector<uint> & getUtilityBuildings() const { return utilityBuildings; }
         std::vector<uint> getAllBuildingsIDs() const;
-        uint getMinRow() const { return minRow; }
-        uint getMaxRow() const { return maxRow; }
-        uint getMinCol() const { return minCol; }
-        uint getMaxCol() const { return maxCol; }
+        int getMinRow() const { return minRow; }
+        int getMaxRow() const { return maxRow; }
+        int getMinCol() const { return minCol; }
+        int getMaxCol() const { return maxCol; }
 };
