@@ -1,7 +1,6 @@
 #include <vector>
 #include <iostream>
 #include <climits>
-
 #include "IIAlgorithms.h"
 
 using namespace std;
@@ -20,8 +19,6 @@ bool betterState(const State & s1, const State & s2) {
 bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
 }
-
-// TODO do not copy states, instead apply change and then the reverse at the end
 
 State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
 
@@ -76,6 +73,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     cout << "[!] Applying ADD operator" << endl;
     State addState = addBuildingOperator(state, findBest);
     int addStateValue = addState.value();
+
     if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
         cout << "[!] Found better state by building, value: " << addStateValue << endl;
         if(!findBest) return addState;
@@ -140,8 +138,8 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
 
                     // create building and check its value
                     uint newBuildingID = state.createBuilding(currProject, row, col);
-
                     int newStateValue = state.value();                    
+
                     if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
                         // if only want a better solution return immediatelly
                         if(!findBest) return state;
@@ -169,7 +167,7 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
     return initialState;
 }
 
-State removeBuildingOperator(const State & initialState, bool findBest){
+State removeBuildingOperator(const State & initialState, bool findBest){ // TODO do not copy states, instead apply change and then the reverse at the end
     State bestState = initialState;
     int bestValue = initialState.value();
 
