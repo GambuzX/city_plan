@@ -321,3 +321,42 @@ bool State::isPositionNearBuildings(int row, int col) const {
     return minRow-D <= row && row <= maxRow+D && 
            minCol-D <= col && col <= maxCol+D;
 }
+
+bool State::operator ==(const State& s) {
+    
+    if(this->nextID != s.getNextID())
+        return false;
+
+    if(this->emptyCells != s.emptyCount())
+        return false;
+
+    if(this->minRow != s.getMinRow())
+        return false;
+    if(this->maxRow != s.getMaxRow())
+        return false;
+    if(this->minCol != s.getMinCol())
+        return false;
+    if(this->maxCol != s.getMaxCol())
+        return false;
+    
+    if(buildings.size() != s.getBuildings().size())
+        return false;
+    if(residentialBuildings.size() != s.getResidentialBuildings().size())
+        return false;
+    if(utilityBuildings.size() != s.getUtilityBuildings().size())
+        return false;
+
+    if(cityMap.size() != s.getCityMap().size())
+        return false;
+
+    for(size_t i = 0; i < cityMap.size(); i++){
+        if(cityMap[i].size() != s.getCityMap()[i].size())
+            return false;
+        for(size_t j = 0; j < cityMap[i].size(); j++){
+            if(cityMap[i][j] != s.getCityMap()[i][j])
+                return false;
+        }
+    }
+
+    return true;
+}

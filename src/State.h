@@ -48,4 +48,6 @@ class State {
         int getMaxRow() const { return maxRow; }
         int getMinCol() const { return minCol; }
         int getMaxCol() const { return maxCol; }
+
+        bool operator ==(const State& s);
 };

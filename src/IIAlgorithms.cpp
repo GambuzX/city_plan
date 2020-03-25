@@ -2,6 +2,7 @@
 #include <iostream>
 #include <climits>
 #include <tuple>
+#include <random>
 
 #include "IIAlgorithms.h"
 #include "util.h"
@@ -288,4 +289,32 @@ tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State 
     } 
 
     return make_tuple(top, bottom, top_max_id);
+}
+
+State generate_state(InputInfo *global_info){
+    srand(time(NULL));
+    vector<Project> &projs = global_info->bProjects;
+
+    State s(global_info);
+
+    size_t i_inc = 1, j_inc = 1;
+
+    for(size_t i = 0; i < s.getCityMap().size(); i += i_inc){
+        i_inc = 1;
+        for(size_t j = 0; j < s.getCityMap()[i].size(); j += j_inc){
+            j_inc = 1;
+            Project p = projs[rand() % projs.size()];
+
+            if(s.canCreateBuilding(&p, i, j)){
+                s.createBuilding(&p, i, j);
+                auto plan = p.getPlan();
+                j_inc = plan[0].size();
+                if(i_inc < plan.size()){
+                    i_inc = plan.size();
+                }
+            }
+        }
+    }
+
+    return s;
 }
