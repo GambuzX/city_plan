@@ -331,8 +331,6 @@ bool State::isPositionNearBuildings(int row, int col) const {
     if(buildings.size() == 0) return true;
     int D = getGlobalInfo()->maxWalkDist;
 
-    cout << minRow << ", " << maxRow << ", " << minCol << ", " << maxCol << endl;
-
     // careful with unsigned int and underflows
     return minRow-D <= row && row <= maxRow+D && 
            minCol-D <= col && col <= maxCol+D;

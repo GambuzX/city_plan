@@ -122,12 +122,10 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
 
     for(const pair<short,short> & pos : available) {
         int row = pos.first, col = pos.second;
-        cout << "Trying position " << row << ", " << col << " ... ";
 
         if(!state.isPositionNearBuildings(row,col)) continue;
 
         for(size_t p = 0; p < projects.size(); p++) {
-            cout << "   Project " << p << endl;
             Project * currProject = (Project *) &projects[p];
 
             if(state.canCreateBuilding(currProject, row, col)){ // x = col, y = row
