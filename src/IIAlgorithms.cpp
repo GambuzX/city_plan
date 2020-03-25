@@ -3,7 +3,6 @@
 #include <climits>
 #include <tuple>
 #include <random>
-#include <unordered_set>
 
 #include "IIAlgorithms.h"
 #include "util.h"
@@ -320,7 +319,19 @@ State generate_state(InputInfo *global_info){
     return s;
 }
 
-void generate_states(InputInfo *global_info, int num_states){
+unordered_set<State> generate_states(InputInfo *global_info, int num_states){
     unordered_set<State> state_set;
-    
+
+    for(int i = 0; i < num_states; i++){
+        State s = generate_state(global_info);
+        
+        auto set_pair = state_set.insert(s);
+        
+        // If the the second value from the returning pair is false, 
+        // the state already exists in the set 
+        if(set_pair.second == false)
+            i--; 
+    }
+
+    return state_set;
 }
