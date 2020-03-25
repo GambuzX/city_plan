@@ -12,19 +12,23 @@ State::State(InputInfo * globalInfo) {
     int rows = globalInfo->rows;
     int cols = globalInfo->cols;
     this->globalInfo = globalInfo;
+    this->residentialBuildings.clear();
+    this->utilityBuildings.clear();
     nextID = 1;
-    emptyCells = rows*cols;
     cityMap = std::vector<std::vector<uint>>(rows, std::vector<uint>(cols, 0));
+    for(int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++)
+            emptyPositions.insert(make_pair(r,c));
 }
 
 State::State(const State &s){
     this->nextID = s.getNextID();
-    this->emptyCells = s.emptyCount();
     this->globalInfo = s.getGlobalInfo();
     this->buildings = s.getBuildings();
     this->cityMap = s.getCityMap();
     this->residentialBuildings = s.getResidentialBuildings();
     this->utilityBuildings = s.getUtilityBuildings();
+    this->emptyPositions = s.getEmptyPositions();
 }
 
 State::State(std::vector<std::vector<uint>> v1, std::unordered_map<uint, Building> um1, uint max_id1, 
@@ -80,7 +84,8 @@ State::State(std::vector<std::vector<uint>> v1, std::unordered_map<uint, Buildin
     }
 
     this->nextID = max_id1;
-    this->emptyCells = emptyCells;
+    // TODO muda isto pedrito!!! ja nao existe emptyCells, mas um emptyPositions
+    //this->emptyCells = emptyCells; 
     this->globalInfo = globalInfo;
     this->buildings = um1;
     this->cityMap = map;
@@ -120,7 +125,10 @@ uint State::createBuilding(Project * proj, int row, int col) {
             if (plan[prow][pcol] == '#') {              
                 cityRow = row+prow;
                 cityCol = col+pcol;
-                if (cityMap[cityRow][cityCol] == 0) emptyCells--;
+                
+                positionsSet::iterator it = emptyPositions.find(make_pair(prow,pcol));
+                if (it != emptyPositions.end()) emptyPositions.erase(it);
+
                 cityMap[cityRow][cityCol] = ID;
             }
         }
@@ -157,7 +165,10 @@ void State::removeBuilding(uint id) {
     int endX=x+plan[0].size()-1, endY=y+plan.size()-1;
     for (int row = y; row <= endY; row++) {
         for (int col = x; col <= endX; col++) {
-            if (cityMap[row][col] != 0) emptyCells++;
+            
+            if(plan[row-y][col-x] == '#')
+                emptyPositions.insert(make_pair(row,col));
+
             cityMap[row][col] = 0;
         }
     }
@@ -246,7 +257,7 @@ int State::value() const {
     int points = 0;
 
     // for all residential buildings
-    for (int rIndex : residentialBuildings) { 
+    for (int rIndex : residentialBuildings) {
         const Building & resBuilding = buildings.find(rIndex)->second;
 
         // check all utilities that exist
@@ -267,7 +278,6 @@ int State::value() const {
             }
         }
     }
-
     return points;
 }
 
@@ -316,6 +326,8 @@ bool State::addRandomBuilding() {
 bool State::isPositionNearBuildings(int row, int col) const {
     if(buildings.size() == 0) return true;
     int D = getGlobalInfo()->maxWalkDist;
+
+    cout << minRow << ", " << maxRow << ", " << minCol << ", " << maxCol << endl;
 
     // careful with unsigned int and underflows
     return minRow-D <= row && row <= maxRow+D && 

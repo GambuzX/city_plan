@@ -13,14 +13,12 @@ State addBuildingOperator(const State & initialState, bool findBest);
 State removeBuildingOperator(const State & initialState, bool findBest);
 State replaceBuildingOperator(const State & initialState, bool findBest);
 
-bool betterState(const State & s1, const State & s2) {
-    int s1Val = s1.value();
-    int s2Val = s2.value();
-    return s2Val > s1Val || (s2Val == s1Val && s2.emptyCount() > s1.emptyCount());
-}
-
 bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
+}
+
+bool betterState(int pValue, State * s1, int nValue, State * s2) {
+    return nValue > pValue || (nValue == pValue && s2->getEmptyPositions().size() > s1->getEmptyPositions().size());
 }
 
 State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
@@ -77,7 +75,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     State addState = addBuildingOperator(state, findBest);
     int addStateValue = addState.value();
 
-    if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
+    if(betterState(bestValue, bestState, addStateValue, &addState)) {
         cout << "[!] Found better state by building, value: " << addStateValue << endl;
         if(!findBest) return addState;
         bestState = &addState;
@@ -88,7 +86,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     cout << "[!] Applying REPLACE operator" << endl;
     State replaceState = replaceBuildingOperator(state, findBest);
     int replaceStateValue = replaceState.value();
-    if(betterState(bestValue, bestState->emptyCount(), replaceStateValue, replaceState.emptyCount())) {
+    if(betterState(bestValue, bestState, replaceStateValue, &replaceState)) {
         cout << "[!] Found better state by replacing, value: " << replaceStateValue << endl;
         if(!findBest) return replaceState;
         bestState = &replaceState;
@@ -99,7 +97,7 @@ State higherValueNeighbour(const State & state, bool findBest){
     cout << "[!] Applying REMOVE operator" << endl;
     State removeState = removeBuildingOperator(state, findBest);
     int removeStateValue = removeState.value();
-    if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
+    if(betterState(bestValue, bestState, removeStateValue, &removeState)) {
         cout << "[!] Found better state by removing, value: " << removeStateValue << endl;
         if(!findBest) return removeState;
         bestState = &removeState;
@@ -110,59 +108,54 @@ State higherValueNeighbour(const State & state, bool findBest){
 }
 
 State addBuildingOperator(const State & initialState, bool findBest = false){
-    int D = initialState.getGlobalInfo()->maxWalkDist;
+    // needed state info
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-    const vector<vector<uint>> & map = initialState.getCityMap();
+    const positionsSet & available = initialState.getEmptyPositions();
 
     State state = initialState;
     int initialValue = state.value();
 
+    // variables to store best option
     Project * bProject;
-    uint bEmptyCount = state.emptyCount();
+    uint bEmptyCount = state.getEmptyPositions().size();
     int bRow, bCol, bValue = initialValue;
 
-    int minRow = max(0, initialState.getMinRow()-D);
-    int maxRow = min((int)map.size()-1, initialState.getMaxRow() + D);
-    int minCol = max(0, initialState.getMinCol()-D);
-    int maxCol = min((int)map[0].size()-1, initialState.getMaxCol() + D);
+    for(const pair<short,short> & pos : available) {
+        int row = pos.first, col = pos.second;
+        cout << "Trying position " << row << ", " << col << " ... ";
 
-    for(int row = minRow; row <= maxRow; row++){
-        for(int col = minCol; col <= maxCol; col++){
+        if(!state.isPositionNearBuildings(row,col)) continue;
 
-            // check if empty
-            if(map[row][col] != 0)
-                continue;
-            
-            // try to build all projects
-            for(size_t p = 0; p < projects.size(); p++) {
-                Project * currProject = (Project *) &projects[p];
+        for(size_t p = 0; p < projects.size(); p++) {
+            cout << "   Project " << p << endl;
+            Project * currProject = (Project *) &projects[p];
 
-                if(state.canCreateBuilding(currProject, row, col)){ // x = col, y = row
+            if(state.canCreateBuilding(currProject, row, col)){ // x = col, y = row
 
-                    // create building and check its value
-                    uint newBuildingID = state.createBuilding(currProject, row, col);
-                    int newStateValue = state.value();                    
+                // create building and check its value
+                uint newBuildingID = state.createBuilding(currProject, row, col);
+                int newStateValue = state.value();                    
 
-                    if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
-                        // if only want a better solution return immediatelly
-                        if(!findBest) return state;
+                if(betterState(bValue, bEmptyCount, newStateValue, state.getEmptyPositions().size())) {
+                    // if only want a better solution return immediatelly
+                    if(!findBest) return state;
 
-                        // assign variables
-                        bProject = currProject;
-                        bRow = row;
-                        bCol = col;
-                        bValue = newStateValue;
-                        bEmptyCount = state.emptyCount();
-                    }
+                    // assign variables
+                    bProject = currProject;
+                    bRow = row;
+                    bCol = col;
+                    bValue = newStateValue;
+                    bEmptyCount = state.getEmptyPositions().size();
+                }
 
-                    // remove building to maintain state
-                    state.removeBuilding(newBuildingID);
-                } 
-            }
+                // remove building to maintain state
+                state.removeBuilding(newBuildingID);
+            } 
         }
     }
+
     // reached a better solution
-    if(betterState(initialValue, state.emptyCount(), bValue, bEmptyCount)) {
+    if(betterState(initialValue, state.getEmptyPositions().size(), bValue, bEmptyCount)) {
         state.createBuilding(bProject, bRow, bCol);
         return state;
     }
@@ -180,7 +173,7 @@ State removeBuildingOperator(const State & initialState, bool findBest){ // TODO
         newState.removeBuilding(b);
         int newStateValue = newState.value();
 
-        if(betterState(bestValue, bestState.emptyCount(), newStateValue, newState.emptyCount())) {
+        if(betterState(bestValue, &bestState, newStateValue, &newState)) {
             if(!findBest) return newState;
 
             bestState = newState;
@@ -217,7 +210,7 @@ State replaceBuildingOperator(const State & initialState, bool findBest){
                 newStateReplace.createBuilding(proj, it->second.getRow(), it->second.getCol());
                 int newStateValue = newStateReplace.value();
 
-                if(betterState(bestValue, bestState.emptyCount(), newStateValue, newStateReplace.emptyCount())) {
+                if(betterState(bestValue, &bestState, newStateValue, &newStateReplace)) {
                     if(!findBest) return newStateReplace;
 
                     bestState = newStateReplace;
@@ -248,7 +241,7 @@ State breeding(const State &s1, const State &s2){
     if(v2 > v1)
         return new_s2;
 
-    if(new_s1.emptyCount() >= new_s2.emptyCount())
+    if(new_s1.getEmptyPositions().size() >= new_s2.getEmptyPositions().size())
         return new_s1;
     
     return new_s2;
