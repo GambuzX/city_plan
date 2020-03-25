@@ -322,7 +322,7 @@ bool State::isPositionNearBuildings(int row, int col) const {
            minCol-D <= col && col <= maxCol+D;
 }
 
-bool State::operator ==(const State& s) {
+bool State::operator ==(const State& s) const{
     
     if(this->nextID != s.getNextID())
         return false;

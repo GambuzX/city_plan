@@ -3,6 +3,7 @@
 #include <climits>
 #include <tuple>
 #include <random>
+#include <unordered_set>
 
 #include "IIAlgorithms.h"
 #include "util.h"
@@ -317,4 +318,9 @@ State generate_state(InputInfo *global_info){
     }
 
     return s;
+}
+
+void generate_states(InputInfo *global_info, int num_states){
+    unordered_set<State> state_set;
+    
 }

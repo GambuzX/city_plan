@@ -49,5 +49,20 @@ class State {
         int getMinCol() const { return minCol; }
         int getMaxCol() const { return maxCol; }
 
-        bool operator ==(const State& s);
+        bool operator ==(const State& s) const;
 };
+
+namespace std
+{
+    template<>
+    struct hash<State>
+    {
+        size_t operator()(const State & obj) const
+        {
+            return hash<int>()(obj.getNextID() + 
+                                obj.emptyCount() + 
+                                obj.getBuildings().size()
+            );
+        }
+    };
+}

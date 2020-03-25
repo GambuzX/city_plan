@@ -10,3 +10,6 @@ State higherValueNeighbour(const State & state, bool findBest);
 
 State breeding(const State &s1, const State &s2);
 std::tuple<std::vector<std::vector<uint>>, std::vector<std::vector<uint>>, uint> divideState(const State &s, const uint &num_rows, const uint &mid_row, const uint &num_cols);
+
+void generate_states(InputInfo *global_info, int num_states);
+State generate_state(InputInfo *global_info);
