@@ -29,6 +29,10 @@ State::State(const State &s){
     this->residentialBuildings = s.getResidentialBuildings();
     this->utilityBuildings = s.getUtilityBuildings();
     this->emptyPositions = s.getEmptyPositions();
+    this->minRow = s.getMinRow();
+    this->maxRow = s.getMaxRow();
+    this->minCol = s.getMinCol();
+    this->maxCol = s.getMaxCol();
 }
 
 State::State(std::vector<std::vector<uint>> v1, std::unordered_map<uint, Building> um1, uint max_id1, 
