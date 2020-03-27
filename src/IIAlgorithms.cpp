@@ -291,27 +291,24 @@ tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State 
     return make_tuple(top, bottom, top_max_id);
 }
 
-State generate_state(InputInfo *global_info){
-    srand(time(NULL));
+State generateState(InputInfo *global_info){
     vector<Project> &projs = global_info->bProjects;
 
     State s(global_info);
+    const vector<vector<uint>> & map = s.getCityMap();
 
-    size_t i_inc = 1, j_inc = 1;
+    size_t col_inc = 1;
+    for(size_t row = 0; row < s.getCityMap().size(); row += 1){
+        for(size_t col = 0; col < s.getCityMap()[row].size(); col += col_inc){
+            col_inc = 1;
+            if (map[row][col] != 0) continue;
 
-    for(size_t i = 0; i < s.getCityMap().size(); i += i_inc){
-        i_inc = 1;
-        for(size_t j = 0; j < s.getCityMap()[i].size(); j += j_inc){
-            j_inc = 1;
             Project p = projs[rand() % projs.size()];
 
-            if(s.canCreateBuilding(&p, i, j)){
-                s.createBuilding(&p, i, j);
+            if(s.canCreateBuilding(&p, row, col)){
+                s.createBuilding(&p, row, col);
                 auto plan = p.getPlan();
-                j_inc = plan[0].size();
-                if(i_inc < plan.size()){
-                    i_inc = plan.size();
-                }
+                col_inc = plan[0].size();
             }
         }
     }
@@ -319,19 +316,12 @@ State generate_state(InputInfo *global_info){
     return s;
 }
 
-unordered_set<State> generate_states(InputInfo *global_info, int num_states){
-    unordered_set<State> state_set;
+vector<State> generatePopulation(InputInfo *global_info, int populationSize){
+    vector<State> population(populationSize);
 
-    for(int i = 0; i < num_states; i++){
-        State s = generate_state(global_info);
-        
-        auto set_pair = state_set.insert(s);
-        
-        // If the the second value from the returning pair is false, 
-        // the state already exists in the set 
-        if(set_pair.second == false)
-            i--; 
+    for(int i = 0; i < populationSize; i++){
+        population[i] = generateState(global_info);
     }
 
-    return state_set;
+    return population;
 }

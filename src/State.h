@@ -21,6 +21,7 @@ class State {
         void updateMapLimits(int sRow, int eRow, int sCol, int eCol);
     public:
 
+        State() {}
         State(InputInfo * globalInfo);
 
         State(const State &s);
