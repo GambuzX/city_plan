@@ -30,12 +30,14 @@ class State {
 
         bool addRandomBuilding();
         bool canCreateBuilding(Project * proj, int row, int col) const;
+        bool canCreateBuilding(Project * proj, int row, int col, const std::vector<std::vector<bool>> & cityMap) const;
         uint createBuilding(Project * proj, int row, int col);
         void removeBuilding(uint id);
         int value() const;
         void printMap() const;
         bool isPositionNearBuildings(int row, int col) const;
         std::vector<std::vector<uint>> getCityMap() const;
+        std::vector<std::vector<bool>> getFilledPositions() const;
 
         uint getNextID() const { return nextID; }
         uint emptyCount() const { return emptyCells; }

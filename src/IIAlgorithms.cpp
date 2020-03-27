@@ -13,6 +13,7 @@ State randomStart(const State & initialState);
 State addBuildingOperator(const State & initialState, bool findBest);
 State removeBuildingOperator(const State & initialState, bool findBest);
 State replaceBuildingOperator(const State & initialState, bool findBest);
+void updateUsedMap(vector<vector<bool>> & used, const Project & p, int row, int col);
 
 bool betterState(const State & s1, const State & s2) {
     int s1Val = s1.value();
@@ -113,7 +114,7 @@ State higherValueNeighbour(const State & state, bool findBest){
 State addBuildingOperator(const State & initialState, bool findBest = false){
     int D = initialState.getGlobalInfo()->maxWalkDist;
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-    const vector<vector<uint>> & map = initialState.getCityMap();
+    const vector<vector<bool>> & map = initialState.getFilledPositions();
 
     State state = initialState;
     int initialValue = state.value();
@@ -291,29 +292,39 @@ tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State 
     return make_tuple(top, bottom, top_max_id);
 }
 
-State generateState(InputInfo *global_info){
-    vector<Project> &projs = global_info->bProjects;
+State generateState(InputInfo *globalInfo){
+    vector<Project> &projs = globalInfo->bProjects;
 
-    State s(global_info);
-    const vector<vector<uint>> & map = s.getCityMap();
+    State s(globalInfo);
 
-    size_t col_inc = 1;
-    for(size_t row = 0; row < map.size(); row += 1){
-        for(size_t col = 0; col < map[row].size(); col += col_inc){
+    vector<vector<bool>> used(globalInfo->rows, vector<bool>(globalInfo->cols, false));
+    int col_inc = 1;
+    for(int row = 0; row < globalInfo->rows; row += 1){
+        for(int col = 0; col < globalInfo->cols; col += col_inc){
             col_inc = 1;
-            if (map[row][col] != 0) continue;
 
-            Project p = projs[rand() % projs.size()];
+            Project & p = projs[rand() % projs.size()];
 
-            if(s.canCreateBuilding(&p, row, col)){
+            if(s.canCreateBuilding(&p, row, col, used)){
                 s.createBuilding(&p, row, col);
-                auto plan = p.getPlan();
-                col_inc = plan[0].size();
+                updateUsedMap(used, p, row, col);
+                col_inc = p.getPlan()[0].size();
             }
         }
     }
 
     return s;
+}
+
+void updateUsedMap(vector<vector<bool>> & used, const Project & p, int row, int col) {
+    const vector<vector<char>> & plan = p.getPlan();
+    for (size_t r = 0; r < plan.size(); r++) {
+        for (size_t c = 0; c < plan[0].size(); c++) {
+            if (plan[r][c] == '#') {
+                used[row+r][col+c] = true;
+            }
+        }
+    }
 }
 
 vector<State> generatePopulation(InputInfo *global_info, int populationSize){
