@@ -89,10 +89,10 @@ State::State(std::vector<std::vector<uint>> v1, std::unordered_map<uint, Buildin
     this->utilityBuildings = util_build;
 }
 
-bool State::canCreateBuilding(Project * proj, int row, int col) const {
+bool State::canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos) const {
 
     const vector<vector<char>> & plan = proj->getPlan();
-    const vector<vector<bool>> & cityMap = getFilledPositions();
+    const bMatrix & cityMap = filledPos == NULL ? getFilledPositions() : *filledPos;
 
     if (row < 0 || col < 0) return false;   
     if (row + (int)plan.size() > globalInfo->rows) return false;
@@ -112,39 +112,14 @@ bool State::canCreateBuilding(Project * proj, int row, int col) const {
     return true;
 }
 
-bool State::canCreateBuilding(Project * proj, int row, int col, const vector<vector<bool>> & cityMap) const {
-
-    const vector<vector<char>> & plan = proj->getPlan();
-
-    if (row < 0 || col < 0) return false;   
-    if (row + (int)plan.size() > globalInfo->rows) return false;
-    if (col + (int)plan[0].size() > globalInfo->cols) return false;
-
-    int cityRow, cityCol;
-    for (size_t prow = 0; prow < plan.size(); prow++) {
-        for (size_t pcol = 0; pcol < plan[0].size(); pcol++) {
-            cityRow = row+prow;
-            cityCol = col+pcol;
-            if (plan[prow][pcol] == '#' && cityMap[cityRow][cityCol]) {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
 uint State::createBuilding(Project * proj, int row, int col) {
     uint ID = nextID++;
     const vector<vector<char>> & plan = proj->getPlan();
 
-    for (size_t prow = 0; prow < plan.size(); prow++) {
-        for (size_t pcol = 0; pcol < plan[0].size(); pcol++) {
-            if (plan[prow][pcol] == '#') {
+    for (size_t prow = 0; prow < plan.size(); prow++)
+        for (size_t pcol = 0; pcol < plan[0].size(); pcol++)
+            if (plan[prow][pcol] == '#')
                 emptyCells--;
-            }
-        }
-    }
 
     if (proj->getType() == BuildingType::residencial) residentialBuildings.push_back(ID);
     if (proj->getType() == BuildingType::utility) utilityBuildings.push_back(ID);
@@ -167,7 +142,7 @@ uint State::createBuilding(Project * proj, int row, int col) {
     return ID;
 }
 
-void State::removeBuilding(uint id) {
+void State::removeBuilding(uint id, bMatrix * filledPositions) {
     unordered_map<uint, Building>::iterator it = buildings.find(id);
     if (it == buildings.end()) return;
 
@@ -175,13 +150,10 @@ void State::removeBuilding(uint id) {
     const vector<vector<char>> & plan = b.getProject()->getPlan();
 
     // update empty cells
-    for (size_t prow = 0; prow < plan.size(); prow++) {
-        for (size_t pcol = 0; pcol < plan[0].size(); pcol++) {
-            if (plan[prow][pcol] == '#') {
+    for (size_t prow = 0; prow < plan.size(); prow++)
+        for (size_t pcol = 0; pcol < plan[0].size(); pcol++)
+            if (plan[prow][pcol] == '#')
                 emptyCells++;
-            }
-        }
-    }
 
     if(it->second.getProject()->getType() == BuildingType::residencial)
         residentialBuildings.erase(remove(residentialBuildings.begin(), residentialBuildings.end(), id), residentialBuildings.end()); 
@@ -191,13 +163,13 @@ void State::removeBuilding(uint id) {
 
     int x = b.getCol(), y = b.getRow();
     int endX=x+plan[0].size()-1, endY=y+plan.size()-1;
-    updateMapLimits(y, endY, x, endX);
+    updateMapLimits(y, endY, x, endX, filledPositions);
 
     buildings.erase(it);
 }
 
-void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol) {
-    const vector<vector<bool>> & cityMap = getFilledPositions();
+void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * filledPositions) {
+    const bMatrix & cityMap = filledPositions == NULL ? getFilledPositions() : *filledPositions;
 
     if (sCol == minCol) {
         for(int col = minCol; col <= maxCol; col++) {
@@ -317,7 +289,7 @@ void State::printMap() const {
 
 bool State::addRandomBuilding() {
     vector<Project> & projs = getGlobalInfo()->bProjects;
-    const vector<vector<bool>> & map = getFilledPositions();
+    const bMatrix & map = getFilledPositions();
 
     for(int row = 0; row < globalInfo->rows; row++){
         for(int col = 0; col < globalInfo->cols; col++){
@@ -421,8 +393,8 @@ vector<vector<uint>> State::getCityMap() const {
     return map;
 }
 
-vector<vector<bool>> State::getFilledPositions() const {
-    vector<vector<bool>> map (globalInfo->rows, vector<bool>(globalInfo->cols, false));
+bMatrix State::getFilledPositions() const {
+    bMatrix map (globalInfo->rows, vector<bool>(globalInfo->cols, false));
     for(uint b : residentialBuildings) {
         unordered_map<uint, Building>::const_iterator it = buildings.find(b);
         if(it == buildings.end()) continue;

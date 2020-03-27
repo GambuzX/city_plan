@@ -13,7 +13,6 @@ State randomStart(const State & initialState);
 State addBuildingOperator(const State & initialState, bool findBest);
 State removeBuildingOperator(const State & initialState, bool findBest);
 State replaceBuildingOperator(const State & initialState, bool findBest);
-void updateUsedMap(vector<vector<bool>> & used, const Project & p, int row, int col);
 
 bool betterState(const State & s1, const State & s2) {
     int s1Val = s1.value();
@@ -23,6 +22,17 @@ bool betterState(const State & s1, const State & s2) {
 
 bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
+}
+
+void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used) {
+    const vector<vector<char>> & plan = p->getPlan();
+    for (size_t r = 0; r < plan.size(); r++) {
+        for (size_t c = 0; c < plan[0].size(); c++) {
+            if (plan[r][c] == '#') {
+                map[row+r][col+c] = used;
+            }
+        }
+    }
 }
 
 State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
@@ -114,7 +124,7 @@ State higherValueNeighbour(const State & state, bool findBest){
 State addBuildingOperator(const State & initialState, bool findBest = false){
     int D = initialState.getGlobalInfo()->maxWalkDist;
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-    const vector<vector<bool>> & map = initialState.getFilledPositions();
+    bMatrix map = initialState.getFilledPositions();
 
     State state = initialState;
     int initialValue = state.value();
@@ -139,10 +149,11 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
             for(size_t p = 0; p < projects.size(); p++) {
                 Project * currProject = (Project *) &projects[p];
 
-                if(state.canCreateBuilding(currProject, row, col)){ // x = col, y = row
+                if(state.canCreateBuilding(currProject, row, col, &map)){ // x = col, y = row
 
                     // create building and check its value
                     uint newBuildingID = state.createBuilding(currProject, row, col);
+                    updateUsedMap(map, currProject, row, col, true);
                     int newStateValue = state.value();                    
 
                     if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
@@ -158,7 +169,8 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
                     }
 
                     // remove building to maintain state
-                    state.removeBuilding(newBuildingID);
+                    state.removeBuilding(newBuildingID, &map);
+                    updateUsedMap(map, currProject, row, col, false);
                 } 
             }
         }
@@ -297,7 +309,7 @@ State generateState(InputInfo *globalInfo){
 
     State s(globalInfo);
 
-    vector<vector<bool>> used(globalInfo->rows, vector<bool>(globalInfo->cols, false));
+    bMatrix used(globalInfo->rows, vector<bool>(globalInfo->cols, false));
     int col_inc = 1;
     for(int row = 0; row < globalInfo->rows; row += 1){
         for(int col = 0; col < globalInfo->cols; col += col_inc){
@@ -305,26 +317,15 @@ State generateState(InputInfo *globalInfo){
 
             Project & p = projs[rand() % projs.size()];
 
-            if(s.canCreateBuilding(&p, row, col, used)){
+            if(s.canCreateBuilding(&p, row, col, &used)){
                 s.createBuilding(&p, row, col);
-                updateUsedMap(used, p, row, col);
+                updateUsedMap(used, &p, row, col, true);
                 col_inc = p.getPlan()[0].size();
             }
         }
     }
 
     return s;
-}
-
-void updateUsedMap(vector<vector<bool>> & used, const Project & p, int row, int col) {
-    const vector<vector<char>> & plan = p.getPlan();
-    for (size_t r = 0; r < plan.size(); r++) {
-        for (size_t c = 0; c < plan[0].size(); c++) {
-            if (plan[r][c] == '#') {
-                used[row+r][col+c] = true;
-            }
-        }
-    }
 }
 
 vector<State> generatePopulation(InputInfo *global_info, int populationSize){
