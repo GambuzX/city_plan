@@ -11,9 +11,7 @@ using namespace std;
 int main(int argc, char * argv[]) {
     srand(time(NULL));
     InputInfo globalInfo = parseInput(argv[1]);
-    State initialState = State(&globalInfo);
-
-    State localMaximum = hillClimbing(initialState);
+    State localMaximum = hillClimbing(&globalInfo);
     
     return 0;
 }

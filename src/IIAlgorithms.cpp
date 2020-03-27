@@ -36,17 +36,16 @@ void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used) {
     }
 }
 
-State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
+State hillClimbing(InputInfo * info) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;
-    //initialState.printMap();
 
-    cout << "[+] Choosing first building" << endl << endl;
-    State currentState = randomStart(initialState); // random first choice, cuz no points. check both values at different steps
-    //currentState.printMap();
+    cout << "[+] Generating initial state" << endl;
+    State currentState = generateState(info);
     int previousValue, currentValue;
     previousValue = currentValue = currentState.value();
 
+    cout << "[+] Starting Hill Climbing with value: " << currentValue << endl << endl;
     while(1) {
             
         cout << "[+] Searching for neighbour" << endl;
@@ -60,24 +59,15 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
                 continue;
             }
             cout << "[+] Reached local maximum: " << currentValue << endl;
-            //neighbour.printMap();
             break;
         }
 
         cout << "[+] Found neighbour: " << currentValue << endl << endl;
-        //neighbour.printMap();
         currentState = neighbour;
         previousValue = currentValue;
     }
     
     return currentState;
-}
-
-State randomStart(const State & initialState) { // TODO not random. should it be?
-    vector<Project> & projs = initialState.getGlobalInfo()->bProjects;
-    State newState = initialState;
-    newState.createBuilding(&projs[0], 0, 0);
-    return newState;
 }
 
 
@@ -143,7 +133,7 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
         for(int col = minCol; col <= maxCol; col++){
 
             // check if empty
-            if(map[row][col] != 0)
+            if(map[row][col])
                 continue;
             
             // try to build all projects
@@ -327,6 +317,8 @@ State generateState(InputInfo *globalInfo){
     int col_inc = 1;
     for(int row = 0; row < globalInfo->rows; row += 1){
         for(int col = 0; col < globalInfo->cols; col += col_inc){
+
+            if(used[row][col]) continue;
             col_inc = 1;
 
             Project & p = projs[rand() % projs.size()];
