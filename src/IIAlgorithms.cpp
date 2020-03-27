@@ -298,8 +298,8 @@ State generateState(InputInfo *global_info){
     const vector<vector<uint>> & map = s.getCityMap();
 
     size_t col_inc = 1;
-    for(size_t row = 0; row < s.getCityMap().size(); row += 1){
-        for(size_t col = 0; col < s.getCityMap()[row].size(); col += col_inc){
+    for(size_t row = 0; row < map.size(); row += 1){
+        for(size_t col = 0; col < map[row].size(); col += col_inc){
             col_inc = 1;
             if (map[row][col] != 0) continue;
 

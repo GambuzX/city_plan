@@ -13,7 +13,6 @@ class State {
         uint emptyCells;
         InputInfo * globalInfo;
         std::unordered_map<uint, Building> buildings;
-        std::vector<std::vector<uint>> cityMap;
         std::vector<uint> residentialBuildings; // ids of residential buildings
         std::vector<uint> utilityBuildings; // ids of utility buildings
         int minRow, maxRow, minCol, maxCol;
@@ -36,12 +35,12 @@ class State {
         int value() const;
         void printMap() const;
         bool isPositionNearBuildings(int row, int col) const;
+        std::vector<std::vector<uint>> getCityMap() const;
 
         uint getNextID() const { return nextID; }
         uint emptyCount() const { return emptyCells; }
         InputInfo * getGlobalInfo() const { return globalInfo; }
         const std::unordered_map<uint, Building> & getBuildings() const { return buildings; }
-        const std::vector<std::vector<uint>> & getCityMap() const { return cityMap; }
         const std::vector<uint> & getResidentialBuildings() const { return residentialBuildings; }
         const std::vector<uint> & getUtilityBuildings() const { return utilityBuildings; }
         std::vector<uint> getAllBuildingsIDs() const;
