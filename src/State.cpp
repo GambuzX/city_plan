@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <unordered_set>
 #include <unordered_map>
 #include <algorithm>
 
@@ -89,26 +90,47 @@ State::State(std::vector<std::vector<uint>> v1, std::unordered_map<uint, Buildin
     this->utilityBuildings = util_build;
 }
 
-bool State::canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos) const {
-
+bool State::canCreateBuilding(Project * proj, int row, int col) const {
     const vector<vector<char>> & plan = proj->getPlan();
-    const bMatrix & cityMap = filledPos == NULL ? getFilledPositions() : *filledPos;
+    bMatrix cityMap = getFilledPositions();
 
     if (row < 0 || col < 0) return false;   
     if (row + (int)plan.size() > globalInfo->rows) return false;
     if (col + (int)plan[0].size() > globalInfo->cols) return false;
 
-    int cityRow, cityCol;
     for (size_t prow = 0; prow < plan.size(); prow++) {
         for (size_t pcol = 0; pcol < plan[0].size(); pcol++) {
-            cityRow = row+prow;
-            cityCol = col+pcol;
-            if (plan[prow][pcol] == '#' && cityMap[cityRow][cityCol] != 0) {
+            if (plan[prow][pcol] == '#' && cityMap[row+prow][col+pcol] != 0) {
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
+
+bool State::canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos) const {
+    //clock_t limitsStart = clock();
+
+    const vector<vector<char>> & plan = proj->getPlan();
+
+    if (row < 0 || col < 0) return false;   
+    if (row + (int)plan.size() > globalInfo->rows) return false;
+    if (col + (int)plan[0].size() > globalInfo->cols) return false;
+
+    for (size_t prow = 0; prow < plan.size(); prow++) {
+        for (size_t pcol = 0; pcol < plan[0].size(); pcol++) {
+            if (plan[prow][pcol] == '#' && (*filledPos)[row+prow][col+pcol] != 0) {
                 return false;
             }
         }
     }
 
+
+    //clock_t limitsEnd = clock();
+    //double el2 = double(limitsEnd - limitsStart) / CLOCKS_PER_SEC;
+    //cout << "Compare took " << el2 << endl;
+    
     return true;
 }
 
@@ -142,7 +164,7 @@ uint State::createBuilding(Project * proj, int row, int col) {
     return ID;
 }
 
-void State::removeBuilding(uint id, bMatrix * filledPositions) {
+void State::removeBuilding(uint id) {
     unordered_map<uint, Building>::iterator it = buildings.find(id);
     if (it == buildings.end()) return;
 
@@ -163,13 +185,47 @@ void State::removeBuilding(uint id, bMatrix * filledPositions) {
 
     int x = b.getCol(), y = b.getRow();
     int endX=x+plan[0].size()-1, endY=y+plan.size()-1;
-    updateMapLimits(y, endY, x, endX, filledPositions);
+    updateMapLimits(y, endY, x, endX);
 
     buildings.erase(it);
 }
 
-void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * filledPositions) {
-    const bMatrix & cityMap = filledPositions == NULL ? getFilledPositions() : *filledPositions;
+void State::removeBuilding(uint id, bMatrix * filledPositions) {
+    //clock_t removeStart = clock();
+    unordered_map<uint, Building>::iterator it = buildings.find(id);
+    if (it == buildings.end()) return;
+
+    const Building & b = it->second;
+    const vector<vector<char>> & plan = b.getProject()->getPlan();
+
+    // update empty cells
+    for (size_t prow = 0; prow < plan.size(); prow++)
+        for (size_t pcol = 0; pcol < plan[0].size(); pcol++)
+            if (plan[prow][pcol] == '#')
+                emptyCells++;
+
+    if(it->second.getProject()->getType() == BuildingType::residencial)
+        residentialBuildings.erase(remove(residentialBuildings.begin(), residentialBuildings.end(), id), residentialBuildings.end()); 
+
+    if(it->second.getProject()->getType() == BuildingType::utility)
+        utilityBuildings.erase(remove(utilityBuildings.begin(), utilityBuildings.end(), id), utilityBuildings.end()); 
+
+    int x = b.getCol(), y = b.getRow();
+    int endX=x+plan[0].size()-1, endY=y+plan.size()-1;
+    //clock_t limitsStart = clock();
+    updateMapLimits(y, endY, x, endX, filledPositions);
+    //clock_t limitsEnd = clock();
+    //double el2 = double(limitsEnd - limitsStart) / CLOCKS_PER_SEC;
+    //cout << "Limits took " << el2 << endl;
+
+    buildings.erase(it);
+    //clock_t removeEnd = clock();
+    //double el = double(removeEnd - removeStart) / CLOCKS_PER_SEC;
+    //cout << "Remove took " << el << endl << endl;
+}
+
+void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol) {
+    const bMatrix & cityMap = getFilledPositions();
 
     if (sCol == minCol) {
         for(int col = minCol; col <= maxCol; col++) {
@@ -237,8 +293,75 @@ void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * fi
 
 }
 
-int State::value() const {
-    const vector<int> & utilityTypes = globalInfo->allUtilities;
+void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * cityMap) {
+
+    if (sCol == minCol) {
+        for(int col = minCol; col <= maxCol; col++) {
+            bool bExists = false;
+            for(int row = minRow; row <= maxRow; row++) {
+                if ((*cityMap)[row][col]) {
+                    bExists = true;
+                    break;
+                }
+            }
+            if(bExists) break;
+
+            // no building exists in this column
+            minCol++;
+        }
+    }
+
+    if(eCol == maxCol) {
+        for(int col = maxCol; col >= minCol; col--) {
+            bool bExists = false;
+            for(int row = minRow; row <= maxRow; row++) {
+                if ((*cityMap)[row][col]) {
+                    bExists = true;
+                    break;
+                }
+            }
+            if(bExists) break;
+
+            // no building exists in this column
+            maxCol--;
+        }
+    }
+
+    if (sRow == minRow) {
+        for(int row = minRow; row <= maxRow; row++) {
+            bool bExists = false;
+            for(int col = minCol; col <= maxCol; col++) {
+                if ((*cityMap)[row][col]) {
+                    bExists = true;
+                    break;
+                }
+            }
+            if(bExists) break;
+
+            // no building exists in this column
+            minRow++;
+        }
+    }
+
+    if (eRow == maxRow) {
+        for(int row = maxRow; row >= minRow; row--) {
+            bool bExists = false;
+            for(int col = minCol; col <= maxCol; col++) {
+                if ((*cityMap)[row][col]) {
+                    bExists = true;
+                    break;
+                }
+            }
+            if(bExists) break;
+
+            // no building exists in this column
+            maxRow--;
+        }
+    }
+
+}
+
+int State::value() const { //TODO calculate value when a building is adedd;
     const int D = globalInfo->maxWalkDist;
     
     int points = 0;
@@ -247,21 +370,14 @@ int State::value() const {
     for (int rIndex : residentialBuildings) { 
         const Building & resBuilding = buildings.find(rIndex)->second;
 
-        // check all utilities that exist
-        for (int utilityType : utilityTypes) {
+        unordered_set<BuildingType> seen;
+        for (int uIndex : utilityBuildings) {
+            const Building & utilBuilding = buildings.find(uIndex)->second;
+            BuildingType t = utilBuilding.getProject()->getType();
 
-            // for all utility buildings
-            for (int uIndex : utilityBuildings) {
-                const Building & utilBuilding = buildings.find(uIndex)->second;
-                
-                // check if type matches and if is in range D
-                if (utilBuilding.getProject()->getType() == utilityType &&
-                    buildingsDist(resBuilding, utilBuilding) <= D) {
-
-                    // utility type exists, add points
-                    points += resBuilding.getProject()->getValue();
-                    break;
-                }
+            if(seen.find(t) == seen.end() && buildingsDist(resBuilding, utilBuilding) <= D) {
+                seen.insert(t);
+                points += resBuilding.getProject()->getValue();                
             }
         }
     }

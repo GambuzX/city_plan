@@ -3,6 +3,7 @@
 #include <climits>
 #include <tuple>
 #include <random>
+#include <time.h>
 
 #include "IIAlgorithms.h"
 #include "util.h"
@@ -152,9 +153,18 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
                 if(state.canCreateBuilding(currProject, row, col, &map)){ // x = col, y = row
 
                     // create building and check its value
+                    //clock_t beforeCreate = clock();
                     uint newBuildingID = state.createBuilding(currProject, row, col);
+                    //clock_t afterCreate = clock();
+                    //double el1 = double(afterCreate - beforeCreate) / CLOCKS_PER_SEC;
+                    //cout << "Create took " << el1 << endl;
+
                     updateUsedMap(map, currProject, row, col, true);
-                    int newStateValue = state.value();                    
+                    //clock_t beforeValue = clock();              
+                    int newStateValue = state.value();   
+                    //clock_t afterValue = clock();   
+                    //double el2 = double(afterValue - beforeValue) / CLOCKS_PER_SEC;
+                    //cout << "Value took " << el2 << endl;
 
                     if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
                         // if only want a better solution return immediatelly
@@ -169,7 +179,11 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
                     }
 
                     // remove building to maintain state
+                    //clock_t beforeRemove = clock();
                     state.removeBuilding(newBuildingID, &map);
+                    //clock_t afterRemove = clock();   
+                    //double el3 = double(afterRemove - beforeRemove) / CLOCKS_PER_SEC;
+                    //cout << "Remove took " << el3 << endl;
                     updateUsedMap(map, currProject, row, col, false);
                 } 
             }

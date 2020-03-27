@@ -18,7 +18,8 @@ class State {
         std::vector<uint> utilityBuildings; // ids of utility buildings
         int minRow, maxRow, minCol, maxCol;
 
-        void updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * filledPositions = NULL);
+        void updateMapLimits(int sRow, int eRow, int sCol, int eCol);
+        void updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * filledPositions);
     public:
 
         State() {}
@@ -30,9 +31,11 @@ class State {
               std::vector<std::vector<uint>> v2, std::unordered_map<uint, Building> um2, InputInfo *globalInfo);
 
         bool addRandomBuilding();
-        bool canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos = NULL) const;
+        bool canCreateBuilding(Project * proj, int row, int col) const;
+        bool canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos) const;
         uint createBuilding(Project * proj, int row, int col);
-        void removeBuilding(uint id, bMatrix * filledPositions = NULL);
+        void removeBuilding(uint id);
+        void removeBuilding(uint id, bMatrix * filledPositions);
         int value() const;
         void printMap() const;
         bool isPositionNearBuildings(int row, int col) const;
