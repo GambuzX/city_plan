@@ -3,6 +3,7 @@
 #include <climits>
 #include <tuple>
 #include <random>
+#include <time.h>
 
 #include "IIAlgorithms.h"
 #include "util.h"
@@ -24,17 +25,27 @@ bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
 }
 
-State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
+void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used) {
+    const vector<vector<char>> & plan = p->getPlan();
+    for (size_t r = 0; r < plan.size(); r++) {
+        for (size_t c = 0; c < plan[0].size(); c++) {
+            if (plan[r][c] == '#') {
+                map[row+r][col+c] = used;
+            }
+        }
+    }
+}
+
+State hillClimbing(InputInfo * info) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;
-    //initialState.printMap();
 
-    cout << "[+] Choosing first building" << endl << endl;
-    State currentState = randomStart(initialState); // random first choice, cuz no points. check both values at different steps
-    //currentState.printMap();
+    cout << "[+] Generating initial state" << endl;
+    State currentState = generateState(info);
     int previousValue, currentValue;
     previousValue = currentValue = currentState.value();
 
+    cout << "[+] Starting Hill Climbing with value: " << currentValue << endl << endl;
     while(1) {
             
         cout << "[+] Searching for neighbour" << endl;
@@ -48,24 +59,15 @@ State hillClimbing(const State & initialState) { // order buildings by occupied 
                 continue;
             }
             cout << "[+] Reached local maximum: " << currentValue << endl;
-            //neighbour.printMap();
             break;
         }
 
         cout << "[+] Found neighbour: " << currentValue << endl << endl;
-        //neighbour.printMap();
         currentState = neighbour;
         previousValue = currentValue;
     }
     
     return currentState;
-}
-
-State randomStart(const State & initialState) { // TODO not random. should it be?
-    vector<Project> & projs = initialState.getGlobalInfo()->bProjects;
-    State newState = initialState;
-    newState.createBuilding(&projs[0], 0, 0);
-    return newState;
 }
 
 
@@ -113,7 +115,7 @@ State higherValueNeighbour(const State & state, bool findBest){
 State addBuildingOperator(const State & initialState, bool findBest = false){
     int D = initialState.getGlobalInfo()->maxWalkDist;
     const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-    const vector<vector<uint>> & map = initialState.getCityMap();
+    bMatrix map = initialState.getFilledPositions();
 
     State state = initialState;
     int initialValue = state.value();
@@ -131,18 +133,28 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
         for(int col = minCol; col <= maxCol; col++){
 
             // check if empty
-            if(map[row][col] != 0)
+            if(map[row][col])
                 continue;
             
             // try to build all projects
             for(size_t p = 0; p < projects.size(); p++) {
                 Project * currProject = (Project *) &projects[p];
 
-                if(state.canCreateBuilding(currProject, row, col)){ // x = col, y = row
+                if(state.canCreateBuilding(currProject, row, col, &map)){ // x = col, y = row
 
                     // create building and check its value
+                    //clock_t beforeCreate = clock();
                     uint newBuildingID = state.createBuilding(currProject, row, col);
-                    int newStateValue = state.value();                    
+                    //clock_t afterCreate = clock();
+                    //double el1 = double(afterCreate - beforeCreate) / CLOCKS_PER_SEC;
+                    //cout << "Create took " << el1 << endl;
+
+                    updateUsedMap(map, currProject, row, col, true);
+                    //clock_t beforeValue = clock();              
+                    int newStateValue = state.value();   
+                    //clock_t afterValue = clock();   
+                    //double el2 = double(afterValue - beforeValue) / CLOCKS_PER_SEC;
+                    //cout << "Value took " << el2 << endl;
 
                     if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
                         // if only want a better solution return immediatelly
@@ -157,7 +169,12 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
                     }
 
                     // remove building to maintain state
-                    state.removeBuilding(newBuildingID);
+                    //clock_t beforeRemove = clock();
+                    state.removeBuilding(newBuildingID, &map);
+                    //clock_t afterRemove = clock();   
+                    //double el3 = double(afterRemove - beforeRemove) / CLOCKS_PER_SEC;
+                    //cout << "Remove took " << el3 << endl;
+                    updateUsedMap(map, currProject, row, col, false);
                 } 
             }
         }
@@ -291,24 +308,25 @@ tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State 
     return make_tuple(top, bottom, top_max_id);
 }
 
-State generateState(InputInfo *global_info){
-    vector<Project> &projs = global_info->bProjects;
+State generateState(InputInfo *globalInfo){
+    vector<Project> &projs = globalInfo->bProjects;
 
-    State s(global_info);
-    const vector<vector<uint>> & map = s.getCityMap();
+    State s(globalInfo);
 
-    size_t col_inc = 1;
-    for(size_t row = 0; row < s.getCityMap().size(); row += 1){
-        for(size_t col = 0; col < s.getCityMap()[row].size(); col += col_inc){
+    bMatrix used(globalInfo->rows, vector<bool>(globalInfo->cols, false));
+    int col_inc = 1;
+    for(int row = 0; row < globalInfo->rows; row += 1){
+        for(int col = 0; col < globalInfo->cols; col += col_inc){
+
+            if(used[row][col]) continue;
             col_inc = 1;
-            if (map[row][col] != 0) continue;
 
-            Project p = projs[rand() % projs.size()];
+            Project & p = projs[rand() % projs.size()];
 
-            if(s.canCreateBuilding(&p, row, col)){
+            if(s.canCreateBuilding(&p, row, col, &used)){
                 s.createBuilding(&p, row, col);
-                auto plan = p.getPlan();
-                col_inc = plan[0].size();
+                updateUsedMap(used, &p, row, col, true);
+                col_inc = p.getPlan()[0].size();
             }
         }
     }

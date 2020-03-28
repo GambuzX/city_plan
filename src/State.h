@@ -6,6 +6,7 @@
 #include "InputParse.h"
 
 typedef unsigned int uint;
+typedef std::vector<std::vector<bool>> bMatrix;
 
 class State {
     private:
@@ -13,12 +14,12 @@ class State {
         uint emptyCells;
         InputInfo * globalInfo;
         std::unordered_map<uint, Building> buildings;
-        std::vector<std::vector<uint>> cityMap;
         std::vector<uint> residentialBuildings; // ids of residential buildings
         std::vector<uint> utilityBuildings; // ids of utility buildings
         int minRow, maxRow, minCol, maxCol;
 
         void updateMapLimits(int sRow, int eRow, int sCol, int eCol);
+        void updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * filledPositions);
     public:
 
         State() {}
@@ -31,17 +32,20 @@ class State {
 
         bool addRandomBuilding();
         bool canCreateBuilding(Project * proj, int row, int col) const;
+        bool canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos) const;
         uint createBuilding(Project * proj, int row, int col);
         void removeBuilding(uint id);
+        void removeBuilding(uint id, bMatrix * filledPositions);
         int value() const;
         void printMap() const;
         bool isPositionNearBuildings(int row, int col) const;
+        std::vector<std::vector<uint>> getCityMap() const;
+        bMatrix getFilledPositions() const;
 
         uint getNextID() const { return nextID; }
         uint emptyCount() const { return emptyCells; }
         InputInfo * getGlobalInfo() const { return globalInfo; }
         const std::unordered_map<uint, Building> & getBuildings() const { return buildings; }
-        const std::vector<std::vector<uint>> & getCityMap() const { return cityMap; }
         const std::vector<uint> & getResidentialBuildings() const { return residentialBuildings; }
         const std::vector<uint> & getUtilityBuildings() const { return utilityBuildings; }
         std::vector<uint> getAllBuildingsIDs() const;

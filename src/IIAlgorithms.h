@@ -2,7 +2,7 @@
 
 #include "State.h"
 
-State hillClimbing(const State & initialState);
+State hillClimbing(InputInfo * info);
 State simulatedAnnealing(const State & initialState);
 State tabuSearch(const State & initialState);
 
