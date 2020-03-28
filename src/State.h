@@ -18,8 +18,6 @@ class State {
         std::vector<uint> utilityBuildings; // ids of utility buildings
         int minRow, maxRow, minCol, maxCol;
 
-        void updateMapLimits(int sRow, int eRow, int sCol, int eCol);
-        void updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * filledPositions);
     public:
 
         State() {}
@@ -33,9 +31,10 @@ class State {
         bool addRandomBuilding();
         bool canCreateBuilding(Project * proj, int row, int col) const;
         bool canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos) const;
-        uint createBuilding(Project * proj, int row, int col);
-        void removeBuilding(uint id);
-        void removeBuilding(uint id, bMatrix * filledPositions);
+        uint createBuilding(Project * proj, int row, int col, bool updateLimits = true);
+        Building removeBuilding(uint id, bool updateLimits = true);
+        void updateMapLimitsCreate(Project * proj, int row, int col);
+        void updateMapLimitsRemove(const Building & removed);
         int value() const;
         void printMap() const;
         bool isPositionNearBuildings(int row, int col) const;
@@ -54,7 +53,10 @@ class State {
         int getMinCol() const { return minCol; }
         int getMaxCol() const { return maxCol; }
 
-        bool operator ==(const State& s) const;
+        bool operator==(const State& s) const;
+
+        static bool betterState(const State & s1, const State & s2);
+        static bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells);
 };
 
 namespace std
@@ -71,3 +73,5 @@ namespace std
         }
     };
 }
+
+void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used);
