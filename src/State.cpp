@@ -134,7 +134,7 @@ bool State::canCreateBuilding(Project * proj, int row, int col, bMatrix * filled
     return true;
 }
 
-uint State::createBuilding(Project * proj, int row, int col) {
+uint State::createBuilding(Project * proj, int row, int col, bool updateLimits) {
     uint ID = nextID++;
     const vector<vector<char>> & plan = proj->getPlan();
 
@@ -146,7 +146,13 @@ uint State::createBuilding(Project * proj, int row, int col) {
     if (proj->getType() == BuildingType::residencial) residentialBuildings.push_back(ID);
     if (proj->getType() == BuildingType::utility) utilityBuildings.push_back(ID);
 
-    // update map limits
+    if(updateLimits) updateMapLimitsCreate(proj, row, col);
+    buildings.insert(make_pair(ID, Building(proj, row, col)));
+    return ID;
+}
+
+void State::updateMapLimitsCreate(Project * proj, int row, int col) {
+    const vector<vector<char>> & plan = proj->getPlan();
     if(buildings.size() == 0) {
         minRow = row;
         maxRow = (uint) (row + plan.size() - 1);
@@ -159,16 +165,13 @@ uint State::createBuilding(Project * proj, int row, int col) {
         minCol = min(minCol, col);
         maxCol = max(maxCol, col + (int) plan[0].size() - 1);
     }
-
-    buildings.insert(make_pair(ID, Building(proj, row, col)));
-    return ID;
 }
 
-void State::removeBuilding(uint id) {
+Building State::removeBuilding(uint id, bool updateLimits) {
     unordered_map<uint, Building>::iterator it = buildings.find(id);
     if (it == buildings.end()) return;
 
-    const Building & b = it->second;
+    Building b = it->second;
     const vector<vector<char>> & plan = b.getProject()->getPlan();
 
     // update empty cells
@@ -181,50 +184,22 @@ void State::removeBuilding(uint id) {
         residentialBuildings.erase(remove(residentialBuildings.begin(), residentialBuildings.end(), id), residentialBuildings.end()); 
 
     if(it->second.getProject()->getType() == BuildingType::utility)
-        utilityBuildings.erase(remove(utilityBuildings.begin(), utilityBuildings.end(), id), utilityBuildings.end()); 
+        utilityBuildings.erase(remove(utilityBuildings.begin(), utilityBuildings.end(), id), utilityBuildings.end());
 
-    int x = b.getCol(), y = b.getRow();
-    int endX=x+plan[0].size()-1, endY=y+plan.size()-1;
-    updateMapLimits(y, endY, x, endX);
-
+    if(updateLimits) updateMapLimitsRemove(b);
     buildings.erase(it);
+    return b;
 }
 
-void State::removeBuilding(uint id, bMatrix * filledPositions) {
-    //clock_t removeStart = clock();
-    unordered_map<uint, Building>::iterator it = buildings.find(id);
-    if (it == buildings.end()) return;
+void State::updateMapLimitsRemove(const Building & removed) {
 
-    const Building & b = it->second;
-    const vector<vector<char>> & plan = b.getProject()->getPlan();
+    int sRow, eRow, sCol, eCol;
+    const vector<vector<char>> & plan = removed.getProject()->getPlan();
+    sRow = removed.getRow();
+    eRow = sRow + plan.size();
+    sCol = removed.getCol();
+    eCol = sCol + plan[0].size();
 
-    // update empty cells
-    for (size_t prow = 0; prow < plan.size(); prow++)
-        for (size_t pcol = 0; pcol < plan[0].size(); pcol++)
-            if (plan[prow][pcol] == '#')
-                emptyCells++;
-
-    if(it->second.getProject()->getType() == BuildingType::residencial)
-        residentialBuildings.erase(remove(residentialBuildings.begin(), residentialBuildings.end(), id), residentialBuildings.end()); 
-
-    if(it->second.getProject()->getType() == BuildingType::utility)
-        utilityBuildings.erase(remove(utilityBuildings.begin(), utilityBuildings.end(), id), utilityBuildings.end()); 
-
-    int x = b.getCol(), y = b.getRow();
-    int endX=x+plan[0].size()-1, endY=y+plan.size()-1;
-    //clock_t limitsStart = clock();
-    updateMapLimits(y, endY, x, endX, filledPositions);
-    //clock_t limitsEnd = clock();
-    //double el2 = double(limitsEnd - limitsStart) / CLOCKS_PER_SEC;
-    //cout << "Limits took " << el2 << endl;
-
-    buildings.erase(it);
-    //clock_t removeEnd = clock();
-    //double el = double(removeEnd - removeStart) / CLOCKS_PER_SEC;
-    //cout << "Remove took " << el << endl << endl;
-}
-
-void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol) {
     const bMatrix & cityMap = getFilledPositions();
 
     if (sCol == minCol) {
@@ -280,74 +255,6 @@ void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol) {
             bool bExists = false;
             for(int col = minCol; col <= maxCol; col++) {
                 if (cityMap[row][col]) {
-                    bExists = true;
-                    break;
-                }
-            }
-            if(bExists) break;
-
-            // no building exists in this column
-            maxRow--;
-        }
-    }
-
-}
-
-void State::updateMapLimits(int sRow, int eRow, int sCol, int eCol, bMatrix * cityMap) {
-
-    if (sCol == minCol) {
-        for(int col = minCol; col <= maxCol; col++) {
-            bool bExists = false;
-            for(int row = minRow; row <= maxRow; row++) {
-                if ((*cityMap)[row][col]) {
-                    bExists = true;
-                    break;
-                }
-            }
-            if(bExists) break;
-
-            // no building exists in this column
-            minCol++;
-        }
-    }
-
-    if(eCol == maxCol) {
-        for(int col = maxCol; col >= minCol; col--) {
-            bool bExists = false;
-            for(int row = minRow; row <= maxRow; row++) {
-                if ((*cityMap)[row][col]) {
-                    bExists = true;
-                    break;
-                }
-            }
-            if(bExists) break;
-
-            // no building exists in this column
-            maxCol--;
-        }
-    }
-
-    if (sRow == minRow) {
-        for(int row = minRow; row <= maxRow; row++) {
-            bool bExists = false;
-            for(int col = minCol; col <= maxCol; col++) {
-                if ((*cityMap)[row][col]) {
-                    bExists = true;
-                    break;
-                }
-            }
-            if(bExists) break;
-
-            // no building exists in this column
-            minRow++;
-        }
-    }
-
-    if (eRow == maxRow) {
-        for(int row = maxRow; row >= minRow; row--) {
-            bool bExists = false;
-            for(int col = minCol; col <= maxCol; col++) {
-                if ((*cityMap)[row][col]) {
                     bExists = true;
                     break;
                 }

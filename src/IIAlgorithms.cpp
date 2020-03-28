@@ -143,22 +143,15 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
                 if(state.canCreateBuilding(currProject, row, col, &map)){ // x = col, y = row
 
                     // create building and check its value
-                    //clock_t beforeCreate = clock();
-                    uint newBuildingID = state.createBuilding(currProject, row, col);
-                    //clock_t afterCreate = clock();
-                    //double el1 = double(afterCreate - beforeCreate) / CLOCKS_PER_SEC;
-                    //cout << "Create took " << el1 << endl;
-
-                    updateUsedMap(map, currProject, row, col, true);
-                    //clock_t beforeValue = clock();              
+                    uint newBuildingID = state.createBuilding(currProject, row, col, false); // do not update map limits in this step
                     int newStateValue = state.value();   
-                    //clock_t afterValue = clock();   
-                    //double el2 = double(afterValue - beforeValue) / CLOCKS_PER_SEC;
-                    //cout << "Value took " << el2 << endl;
 
                     if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
-                        // if only want a better solution return immediatelly
-                        if(!findBest) return state;
+                        // if only want a better solution return immediately
+                        if(!findBest) {
+                            state.updateMapLimitsCreate(currProject, row, col);
+                            return state;
+                        }
 
                         // assign variables
                         bProject = currProject;
@@ -169,12 +162,8 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
                     }
 
                     // remove building to maintain state
-                    //clock_t beforeRemove = clock();
-                    state.removeBuilding(newBuildingID, &map);
-                    //clock_t afterRemove = clock();   
-                    //double el3 = double(afterRemove - beforeRemove) / CLOCKS_PER_SEC;
-                    //cout << "Remove took " << el3 << endl;
-                    updateUsedMap(map, currProject, row, col, false);
+                    // must pass map without the new building to add
+                    state.removeBuilding(newBuildingID, false);
                 } 
             }
         }
@@ -189,24 +178,40 @@ State addBuildingOperator(const State & initialState, bool findBest = false){
 }
 
 State removeBuildingOperator(const State & initialState, bool findBest){ // TODO do not copy states, instead apply change and then the reverse at the end
-    State bestState = initialState;
-    int bestValue = initialState.value();
+    State state = initialState;
+    int initialValue = state.value();
+
+    uint bestToRemove = 0;
+    int bValue = initialValue, bEmptyCount = state.emptyCount();
 
     vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
-    for (int b : buildingsIDs) {
-        State newState = initialState;
-        newState.removeBuilding(b);
-        int newStateValue = newState.value();
+    for (uint b : buildingsIDs) {
 
-        if(betterState(bestValue, bestState.emptyCount(), newStateValue, newState.emptyCount())) {
-            if(!findBest) return newState;
-
-            bestState = newState;
-            bestValue = newStateValue;
+        Building removed = state.removeBuilding(b, false);
+        int newValue = state.value();
+        if(betterState(bValue, bEmptyCount, newValue, state.emptyCount())) {
+            // only want one better solution
+            if(!findBest) {
+                state.updateMapLimitsRemove(removed);
+                return state;
+            }
+            
+            // update best solution so far
+            bestToRemove = b;
+            bValue = newValue;
+            bEmptyCount = state.emptyCount();
         }
 
+        state.createBuilding(removed.getProject(), removed.getRow(), removed.getCol(), false);
     }
-    return bestState;
+
+    // reached a better solution
+    if(betterState(initialValue, state.emptyCount(), bValue, bEmptyCount)) {
+        state.removeBuilding(bestToRemove);
+        return state;
+    }
+
+    return initialState;
 }
 
 State replaceBuildingOperator(const State & initialState, bool findBest){
