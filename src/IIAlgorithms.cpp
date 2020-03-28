@@ -13,22 +13,6 @@
 
 using namespace std;
 
-State randomStart(const State & initialState);
-State addBuildingOperator(const State & initialState, bool findBest);
-State removeBuildingOperator(const State & initialState, bool findBest);
-State replaceBuildingOperator(const State & initialState, bool findBest);
-
-void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used) {
-    const vector<vector<char>> & plan = p->getPlan();
-    for (size_t r = 0; r < plan.size(); r++) {
-        for (size_t c = 0; c < plan[0].size(); c++) {
-            if (plan[r][c] == '#') {
-                map[row+r][col+c] = used;
-            }
-        }
-    }
-}
-
 State hillClimbing(InputInfo * info) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;

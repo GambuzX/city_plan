@@ -455,3 +455,14 @@ bool State::betterState(const State & s1, const State & s2) {
 bool State::betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
     return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
 }
+
+void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used) {
+    const vector<vector<char>> & plan = p->getPlan();
+    for (size_t r = 0; r < plan.size(); r++) {
+        for (size_t c = 0; c < plan[0].size(); c++) {
+            if (plan[r][c] == '#') {
+                map[row+r][col+c] = used;
+            }
+        }
+    }
+}

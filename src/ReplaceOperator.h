@@ -11,41 +11,68 @@ class ReplaceOperator : public Operator {
         virtual std::string getActionName() const { return "replacing"; };
 
         virtual State apply(bool findBest) const {
-            const std::unordered_map<uint, Building> & buildings = initialState.getBuildings();
+            // global vars
+            int initialValue = initialState.value();
+            bMatrix map = initialState.getFilledPositions();
             const std::vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-
-            State bestState = initialState;
-            int bestValue = initialState.value();
-
             std::vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
-            for (int b : buildingsIDs) {
-                std::unordered_map<uint, Building>::const_iterator it = buildings.find(b);
-                if(it == buildings.end()) continue;
 
-                // remove building so that it can be replaced
-                State newStateRemove = initialState;
-                newStateRemove.removeBuilding(b);
+            // best choice variables    
+            State state = initialState;
+            uint bestToRemove = 0;
+            Project * bProject;
+            int bRow, bCol;
+            int bValue = initialValue, bEmptyCount = state.emptyCount();
 
-                // try to replace removed building with all projects
-                for (size_t p = 0; p < projects.size(); p++) {
+            // remove building first
+            for (uint b : buildingsIDs) {
+                Building removed = state.removeBuilding(b, false);
+                int row = removed.getRow(), col = removed.getCol();
+                updateUsedMap(map, removed.getProject(), row, col, false);
+
+                // replace building project
+                for(size_t p = 0; p < projects.size(); p++) {
                     Project * proj = (Project*) &projects[p];
-                    if(it->second.getProject()->getID() == proj->getID()) continue;
+                    if(proj->getID() == removed.getProject()->getID()) continue;
 
-                    if(newStateRemove.canCreateBuilding(proj, it->second.getRow(), it->second.getCol())) {
-                        State newStateReplace = newStateRemove;
-                        newStateReplace.createBuilding(proj, it->second.getRow(), it->second.getCol());
-                        int newStateValue = newStateReplace.value();
+                    // check if can create
+                    if(state.canCreateBuilding(proj, row, col, &map)){
 
-                        if(State::betterState(bestValue, bestState.emptyCount(), newStateValue, newStateReplace.emptyCount())) {
-                            if(!findBest) return newStateReplace;
+                        // create building and check its value
+                        uint newBuildingID = state.createBuilding(proj, row, col, false); // do not update map limits in this step
+                        int newStateValue = state.value();   
 
-                            bestState = newStateReplace;
-                            bestValue = newStateValue;
+                        if(State::betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
+                            // if only want a better solution return immediately
+                            if(!findBest) {
+                                state.updateMapLimitsRemove(removed);
+                                state.updateMapLimitsCreate(proj, row, col);
+                                return state;
+                            }
+
+                            // update best solution variables
+                            bProject = proj;
+                            bRow = row;
+                            bCol = col;
+                            bValue = newStateValue;
+                            bEmptyCount = state.emptyCount();
+                            bestToRemove = b;
                         }
 
-                    }
+                        // remove building to maintain state
+                        state.removeBuilding(newBuildingID, false);
+                    } 
                 }
+                updateUsedMap(map, removed.getProject(), row, col, true);
             }
-            return bestState;
+
+            // reached a better solution, apply operations
+            if(State::betterState(initialValue, state.emptyCount(), bValue, bEmptyCount)) {
+                state.removeBuilding(bestToRemove);
+                state.createBuilding(bProject, bRow, bCol);
+                return state;
+            }
+
+            return initialState;
         }
 };

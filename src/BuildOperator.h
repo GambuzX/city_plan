@@ -38,8 +38,7 @@ class BuildOperator : public Operator {
                     for(size_t p = 0; p < projects.size(); p++) {
                         Project * currProject = (Project *) &projects[p];
 
-                        if(state.canCreateBuilding(currProject, row, col, &map)){ // x = col, y = row
-
+                        if(state.canCreateBuilding(currProject, row, col, &map)){
                             // create building and check its value
                             uint newBuildingID = state.createBuilding(currProject, row, col, false); // do not update map limits in this step
                             int newStateValue = state.value();   
@@ -60,7 +59,6 @@ class BuildOperator : public Operator {
                             }
 
                             // remove building to maintain state
-                            // must pass map without the new building to add
                             state.removeBuilding(newBuildingID, false);
                         } 
                     }

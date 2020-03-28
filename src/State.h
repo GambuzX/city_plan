@@ -73,3 +73,5 @@ namespace std
         }
     };
 }
+
+void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used);
