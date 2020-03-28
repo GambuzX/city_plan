@@ -269,6 +269,7 @@ void State::updateMapLimitsRemove(const Building & removed) {
 }
 
 int State::value() const { //TODO calculate value when a building is adedd;
+    cout << "BEGIN VALUE" << endl;
     const int D = globalInfo->maxWalkDist;
     
     int points = 0;
@@ -276,19 +277,18 @@ int State::value() const { //TODO calculate value when a building is adedd;
     // for all residential buildings
     for (int rIndex : residentialBuildings) { 
         const Building & resBuilding = buildings.find(rIndex)->second;
-
         unordered_set<BuildingType> seen;
         for (int uIndex : utilityBuildings) {
             const Building & utilBuilding = buildings.find(uIndex)->second;
             BuildingType t = utilBuilding.getProject()->getType();
 
-            if(seen.find(t) == seen.end() && buildingsDist(resBuilding, utilBuilding) <= D) {
+            if(seen.find(t) == seen.end() && buildingsDistLessThanD(resBuilding, utilBuilding, D)) {
                 seen.insert(t);
                 points += resBuilding.getProject()->getValue();                
             }
         }
     }
-
+    cout << "END VALUE" << endl;
     return points;
 }
 
