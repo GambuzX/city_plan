@@ -447,3 +447,13 @@ bMatrix State::getFilledPositions() const {
     }
     return map;
 }
+
+bool State::betterState(const State & s1, const State & s2) {
+    int s1Val = s1.value();
+    int s2Val = s2.value();
+    return s2Val > s1Val || (s2Val == s1Val && s2.emptyCount() > s1.emptyCount());
+}
+
+bool State::betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
+    return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
+}

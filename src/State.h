@@ -53,7 +53,10 @@ class State {
         int getMinCol() const { return minCol; }
         int getMaxCol() const { return maxCol; }
 
-        bool operator ==(const State& s) const;
+        bool operator==(const State& s) const;
+
+        static bool betterState(const State & s1, const State & s2);
+        static bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells);
 };
 
 namespace std
