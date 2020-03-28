@@ -269,7 +269,6 @@ void State::updateMapLimitsRemove(const Building & removed) {
 }
 
 int State::value() const { //TODO calculate value when a building is adedd;
-    cout << "BEGIN VALUE" << endl;
     const int D = globalInfo->maxWalkDist;
     
     int points = 0;
@@ -288,7 +287,6 @@ int State::value() const { //TODO calculate value when a building is adedd;
             }
         }
     }
-    cout << "END VALUE" << endl;
     return points;
 }
 

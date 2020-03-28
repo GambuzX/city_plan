@@ -13,11 +13,17 @@ int buildingsDist(const Building & b1, const Building & b2) {
     const vector<vector<char>> & b2Plan = b2.getProject()->getPlan();
 
     int dist = INT_MAX;
-    for (size_t row1 = b1Y; row1 < b1Y + b1Plan.size(); row1++)
-        for (size_t col1 = b1X; col1 < b1X + b1Plan[0].size(); col1++)
-            for (size_t row2 = b2Y; row2 < b2Y + b2Plan.size(); row2++)
-                for (size_t col2 = b2X; col2 < b2X + b2Plan[0].size(); col2++)
+    for (size_t row1 = b1Y; row1 < b1Y + b1Plan.size(); row1++) {
+        for (size_t col1 = b1X; col1 < b1X + b1Plan[0].size(); col1++) {
+            if(b1Plan[row1-b1Y][col1-b1X] == '.') continue;
+            for (size_t row2 = b2Y; row2 < b2Y + b2Plan.size(); row2++) {
+                for (size_t col2 = b2X; col2 < b2X + b2Plan[0].size(); col2++) {
+                    if(b2Plan[row2-b2Y][col2-b2X] == '.') continue;
                     dist = min(dist, manhattanDistance(row1,col1,row2,col2));
+                }
+            }
+        }
+    }
     return dist;
 }
 
@@ -26,11 +32,6 @@ bool buildingsDistLessThanD(const Building & b1, const Building & b2, const int 
 
     const vector<vector<char>> & b1Plan = b1.getProject()->getPlan();
     const vector<vector<char>> & b2Plan = b2.getProject()->getPlan();
-
-    if(b2X > b1X && abs((int)b2X - (int)b1X - (int)b1Plan.size() + 1) > D) return false;
-    if(b1X > b2X && abs((int)b1X - (int)b2X - (int)b2Plan.size() + 1) > D) return false;
-    if(b2Y > b1Y && abs((int)b2Y - (int)b1Y - (int)b1Plan[0].size() + 1) > D) return false;
-    if(b1Y > b2Y && abs((int)b1Y - (int)b2Y - (int)b2Plan[0].size() + 1) > D) return false;
     
     for (size_t row1 = b1Y; row1 < b1Y + b1Plan.size(); row1++){
         for (size_t col1 = b1X; col1 < b1X + b1Plan[0].size(); col1++){
