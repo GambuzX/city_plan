@@ -6,6 +6,7 @@ class Building {
         Project * proj;
         int row, col; //left top corner
     public:
+        Building() {}
         Building(Project * proj, int row, int col) {
             this->proj = proj;
             this->row = row;

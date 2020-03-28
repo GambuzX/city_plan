@@ -169,7 +169,7 @@ void State::updateMapLimitsCreate(Project * proj, int row, int col) {
 
 Building State::removeBuilding(uint id, bool updateLimits) {
     unordered_map<uint, Building>::iterator it = buildings.find(id);
-    if (it == buildings.end()) return;
+    if (it == buildings.end()) return Building();
 
     Building b = it->second;
     const vector<vector<char>> & plan = b.getProject()->getPlan();

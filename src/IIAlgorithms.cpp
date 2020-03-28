@@ -42,29 +42,28 @@ State hillClimbing(InputInfo * info) { // order buildings by occupied size / val
 
     cout << "[+] Generating initial state" << endl;
     State currentState = generateState(info);
-    int previousValue, currentValue;
+    int previousValue, currentValue, previousEmpty, currentEmpty;   
     previousValue = currentValue = currentState.value();
+    previousEmpty = currentEmpty = currentState.emptyCount();
 
-    cout << "[+] Starting Hill Climbing with value: " << currentValue << endl << endl;
+    cout << "[!] Initial state (value, emptyCells): (" << currentValue << ", " << currentEmpty << ")" << endl << endl;
     while(1) {
             
         cout << "[+] Searching for neighbour" << endl;
         State neighbour = higherValueNeighbour(currentState, false);
         currentValue = neighbour.value();
+        currentEmpty = neighbour.emptyCount();
 
-        if (currentValue <= previousValue) {     
-            if(currentValue == previousValue && currentState.addRandomBuilding()) {
-                cout << "[+] Added a random building" << endl << endl;
-                previousValue = currentState.value();
-                continue;
-            }
-            cout << "[+] Reached local maximum: " << currentValue << endl;
+        if (!betterState(previousValue, previousEmpty, currentValue, currentEmpty)) {
+            cout << "[!] Could not find a better neighbour" << endl;
+            cout << "[!] Reached local maximum: (" << previousValue << ", " << previousEmpty << ")" << endl;
             break;
         }
 
-        cout << "[+] Found neighbour: " << currentValue << endl << endl;
+        cout << "[!] Found neighbour: (" << currentValue << ", " << currentEmpty << ")" << endl << endl;
         currentState = neighbour;
         previousValue = currentValue;
+        previousEmpty = currentEmpty;
     }
     
     return currentState;
@@ -195,7 +194,7 @@ State removeBuildingOperator(const State & initialState, bool findBest){ // TODO
                 state.updateMapLimitsRemove(removed);
                 return state;
             }
-            
+
             // update best solution so far
             bestToRemove = b;
             bValue = newValue;
