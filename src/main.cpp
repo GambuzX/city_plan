@@ -36,20 +36,34 @@ int main(int argc, char * argv[]) {
         InputInfo globalInfo = parseInput(fileName);
 
         switch(option){
-            case 1:
+            case 1:{
+                /*HILL CLIMBING*/
+                /* TODO
+                    - booleano -> determinar se faz a pesquisa completa
+                */
+                State localMaximum = hillClimbing(&globalInfo);
                 break;
-            case 2: 
+            }
+            case 2:{ 
+                /*SIMULATED ANNEALING*/
                 break;
-            case 3: 
+            }
+            case 3:{ 
+                /*ALGORITMO GENÉTICO*/
+                /* TODO
+                    - tamanho da população
+                    - probabilidade de mutação 
+                    - número de gerações
+                */
                 break;
-            default:
+            }
+            default:{
                 exit = true;
                 break;
+            }
         }
     }while(!exit);
 
-    /*
-    State localMaximum = hillClimbing(&globalInfo);*/
     
     return 0;
 }
