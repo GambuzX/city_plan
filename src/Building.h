@@ -16,6 +16,8 @@ class Building {
         int getRow() const { return row; }
         int getCol() const { return col; }
         Project * getProject() const { return proj; }
+        bool aboveRow(int row) const;
+        bool belowRow(int row) const;
 };
 
 

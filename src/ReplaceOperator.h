@@ -15,7 +15,7 @@ class ReplaceOperator : public Operator {
             int initialValue = initialState.value();
             bMatrix map = initialState.getFilledPositions();
             const std::vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-            std::vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
+            std::list<uint> buildingsIDs = initialState.getAllBuildingsIDs();
 
             // best choice variables    
             State state = initialState;

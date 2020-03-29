@@ -16,7 +16,7 @@ class RemoveOperator : public Operator {
             uint bestToRemove = 0;
             int bValue = initialValue, bEmptyCount = state.emptyCount();
 
-            std::vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
+            std::list<uint> buildingsIDs = initialState.getAllBuildingsIDs();
             for (uint b : buildingsIDs) {
 
                 Building removed = state.removeBuilding(b, false);

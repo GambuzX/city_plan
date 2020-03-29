@@ -3,8 +3,8 @@
 using namespace std;
 
 State breed(const State &s1, const State &s2);
-tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State &s, const uint &num_rows, const uint &mid_row, const uint &num_cols);
 State mutate(State & s);
+State bestIndividual(State * population, int populationSize);
 
 int randPercent() { return (rand() % 100) + 1; }
 
@@ -34,64 +34,33 @@ State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generatio
     return best;
 }
 
-State breed(const State &s1, const State &s2){
-    uint num_rows = s1.getGlobalInfo()->rows;
-    uint mid_row = num_rows / 2;
-    uint num_cols = s1.getGlobalInfo()->cols;
+State breed(const State & s1, const State &s2) {
+    int nRows = s1.getGlobalInfo()->rows;
+    int division = rand() % nRows;
 
-    tuple<vector<vector<uint>>, vector<vector<uint>>, uint> s1_results = divideState(s1, num_rows, mid_row, num_cols);
-    tuple<vector<vector<uint>>, vector<vector<uint>>, uint> s2_results = divideState(s2, num_rows, mid_row, num_cols);
-    
-    State new_s1 = State(get<0>(s1_results), s1.getBuildings(), get<2>(s1_results), get<1>(s2_results), s2.getBuildings(), s1.getGlobalInfo());
-    State new_s2 = State(get<0>(s2_results), s2.getBuildings(), get<2>(s2_results), get<1>(s1_results), s1.getBuildings(), s2.getGlobalInfo());
-    
-    int v1 = new_s1.value();
-    int v2 = new_s2.value();
-    if(v1 > v2)
-        return new_s1;
-    if(v2 > v1)
-        return new_s2;
+    const unordered_map<uint, Building> & s1Buildings = s1.getBuildings();
+    const unordered_map<uint, Building> & s2Buildings = s2.getBuildings();
+    const list<uint> & s1IDs = s1.getAllBuildingsIDs();
+    const list<uint> & s2IDs = s2.getAllBuildingsIDs();
 
-    if(new_s1.emptyCount() >= new_s2.emptyCount())
-        return new_s1;
-    
-    return new_s2;
-}
+    // s1 on top s2 on bottom, and vice versa
+    list<const Building*> s1s2, s2s1;
+    for(uint id : s1IDs) {
+        const Building & b = s1Buildings.at(id);
+        if(b.aboveRow(division)) s1s2.push_back(&b);
+        if(b.belowRow(division)) s2s1.push_back(&b);
+    }
+    for(uint id : s2IDs) {
+        const Building & b = s2Buildings.at(id);
+        if(b.aboveRow(division)) s2s1.push_back(&b);
+        if(b.belowRow(division)) s1s2.push_back(&b);
+    }
 
-tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State &s, const uint &num_rows, const uint &mid_row, const uint &num_cols){
-    vector<uint> buildingIDs = s.getAllBuildingsIDs();
-    unordered_map<uint, Building> buildings = s.getBuildings();
+    State option1(s1.getGlobalInfo()), option2(s1.getGlobalInfo());
+    for (const Building * b : s1s2) option1.createBuilding(b->getProject(), b->getRow(), b->getCol());
+    for (const Building * b : s2s1) option2.createBuilding(b->getProject(), b->getRow(), b->getCol());
 
-    vector<vector<uint>> top = vector<vector<uint>>(mid_row, vector<uint>(num_cols, 0));
-    vector<vector<uint>> bottom = vector<vector<uint>>(num_rows-mid_row, vector<uint>(num_cols, 0));
-
-    uint top_max_id = 0;
-
-    for(size_t i = 0; i < buildingIDs.size(); i++){
-        Building b = buildings.at(buildingIDs[i]);
-
-        if(b.getRow() < (int)mid_row){
-            if(b.getRow() + b.getProject()->getPlan().size() <= mid_row){
-                for(size_t j = 0; j < b.getProject()->getPlan().size(); j++){
-                    for(size_t k = 0; k < b.getProject()->getPlan()[0].size(); k++){
-                        top[b.getRow() + j][b.getCol() + k] = b.getProject()->getID();
-                    }
-                }
-                if(buildingIDs[i] > top_max_id)
-                    top_max_id = buildingIDs[i];
-            }else
-                continue;
-            
-        }else{
-            for(size_t j = 0; j < b.getProject()->getPlan().size(); j++){
-                for(size_t k = 0; k < b.getProject()->getPlan()[0].size(); k++){
-                    bottom[b.getRow() + j - mid_row][b.getCol() + k] = b.getProject()->getID();
-                }
-            }
-        }
-    } 
-
-    return make_tuple(top, bottom, top_max_id);
+    return (State::betterState(option1, option2) ? option2 : option1);
 }
 
 State mutate(State & s) {
