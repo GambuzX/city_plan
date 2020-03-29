@@ -502,3 +502,13 @@ vector<State> generatePopulation(InputInfo *global_info, int populationSize){
 
     return population;
 }
+
+State * generatePopulationPtr(InputInfo *global_info, int populationSize){
+    State * population = new State[populationSize];
+
+    for(int i = 0; i < populationSize; i++){
+        population[i] = generateState(global_info);
+    }
+
+    return population;
+}

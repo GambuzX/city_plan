@@ -10,10 +10,10 @@ int randPercent() { return (rand() % 100) + 1; }
 
 State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generations, double mutationChance) {
 
-    vector<State> population = generatePopulation(globalInfo, populationSize); //switch to pointers
+    State * population = generatePopulationPtr(globalInfo, populationSize);
     for(int g = 0; g < generations; g++) {
-        vector<State> newPopulation(population.size());
-        for (int p = 0; p < population.size(); p++) {
+        State * newPopulation = new State[populationSize];
+        for (int p = 0; p < populationSize; p++) {
             // select parents to breed
             const State & p1 = population[0]; // implement selection algorithm
             const State & p2 = population[1];
@@ -24,9 +24,14 @@ State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generatio
             // mutation
             if(randPercent() <= mutationChance) mutate(newPopulation[p]);
         }
+        delete[] population;
         population = newPopulation;
     }
-    return bestIndividual(population);
+
+    // select best from final population
+    State best = bestIndividual(population, populationSize);
+    delete[] population;
+    return best;
 }
 
 State breed(const State &s1, const State &s2){
@@ -93,9 +98,9 @@ State mutate(State & s) {
     return s;
 }
 
-State bestIndividual(const vector<State> & population) {
+State bestIndividual(State * population, int populationSize) {
     int bI = 0, bVal = population[0].value(), bEmpty = population[0].emptyCount();
-    for(int i = 1; i < population.size(); i++) {
+    for(int i = 1; i < populationSize; i++) {
         int nVal = population[i].value();
         int nEmpty = population[i].emptyCount();
         if (State::betterState(bVal, bEmpty, nVal, nEmpty)) {
