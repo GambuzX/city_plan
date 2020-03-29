@@ -5,7 +5,7 @@
 #include <unordered_set>
 
 State hillClimbing(const State & initialState);
-State simulatedAnnealing(const State & initialState);
+State simulatedAnnealing(const State & initialState, int maxSteps, int temperature);
 State tabuSearch(const State & initialState);
 
 State higherValueNeighbour(const State & state, bool findBest);

@@ -335,3 +335,79 @@ unordered_set<State> generate_states(InputInfo *global_info, int num_states){
 
     return state_set;
 }
+
+State randomNeighbour(const State & state){
+    State * bestState = (State*) &state;
+    int bestValue = state.value();
+
+    // Add building. First because its the one who can score more points
+    cout << "[!] Applying ADD operator" << endl;
+    State addState = addBuildingOperator(state, findBest);
+    int addStateValue = addState.value();
+
+    if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
+        cout << "[!] Found better state by building, value: " << addStateValue << endl;
+        if(!findBest) return addState;
+        bestState = &addState;
+        bestValue = addStateValue;
+    }
+
+    // Replace building. Second because can still increase points
+    cout << "[!] Applying REPLACE operator" << endl;
+    State replaceState = replaceBuildingOperator(state, findBest);
+    int replaceStateValue = replaceState.value();
+    if(betterState(bestValue, bestState->emptyCount(), replaceStateValue, replaceState.emptyCount())) {
+        cout << "[!] Found better state by replacing, value: " << replaceStateValue << endl;
+        if(!findBest) return replaceState;
+        bestState = &replaceState;
+        bestValue = replaceStateValue;
+    }
+
+    // Remove building. Can only improve by having same value and less occupied cells
+    cout << "[!] Applying REMOVE operator" << endl;
+    State removeState = removeBuildingOperator(state, findBest);
+    int removeStateValue = removeState.value();
+    if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
+        cout << "[!] Found better state by removing, value: " << removeStateValue << endl;
+        if(!findBest) return removeState;
+        bestState = &removeState;
+        bestValue = removeStateValue;
+    }
+
+    return *bestState;
+}
+
+State simulatedAnnealing(const State & initialState, int maxSteps, int temperature){
+    //initialState.printMap();
+    State currentState = initialState;
+    int currentValue = currentState.value();
+    int stepCount = 0;
+
+    while(stepCount < maxSteps && temperature){
+        if(!(stepCount % 100))
+            --temperature; //To be revised
+
+        cout << "[+] Searching for neighbour" << endl;
+        State neighbour = randomNeighbour(currentState);
+        neighbourValue = neighbour.value();
+
+        if (currentValue >= neighbourValue){  
+            double randomValue = ((double)rand()) / ((double)RAND_MAX);   
+            double delta = currentValue - neighbourValue; 
+
+            if(delta / temperature <= randomValue) { //acceptance probability
+                currentValue = neighbourValue;
+                currentState = neighbour;
+                cout << "[+] Found neighbour: " << currentValue << endl << endl;
+            }
+        }
+        else{
+            currentValue = neighbourValue;
+            currentState = neighbour;
+            cout << "[+] Found neighbour: " << currentValue << endl << endl;
+        }        
+    }
+    
+    return currentState;
+}
+
