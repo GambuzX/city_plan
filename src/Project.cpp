@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int Project::nextID = 1;
+int Project::nextID = 0;
 
 BuildingType getBuildingType(char type) {
     switch(type) {
