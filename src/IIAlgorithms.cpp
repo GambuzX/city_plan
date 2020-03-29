@@ -6,7 +6,7 @@
 #include <time.h>
 
 #include "IIAlgorithms.h"
-#include "util.h"
+#include "Util.h"
 #include "BuildOperator.h"
 #include "RemoveOperator.h"
 #include "ReplaceOperator.h"

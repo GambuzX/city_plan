@@ -1,4 +1,7 @@
 #include "Genetic.h"
+#include "BuildOperator.h"
+#include "RemoveOperator.h"
+#include "ReplaceOperator.h"
 
 using namespace std;
 
