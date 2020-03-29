@@ -74,6 +74,7 @@ State higherValueNeighbour(const State & state, bool findBest){
         }
     }
 
+    for(size_t i = 0; i < operators.size(); i++) delete operators[i];
     return bestState;
 }
 

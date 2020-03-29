@@ -1,19 +1,22 @@
 #pragma once
 
-#include <vector>
 #include <random>
 #include "Operator.h"
 
 class RemoveRandomOperator : public Operator {
     public:
         RemoveRandomOperator(const State & s) : Operator(s) {}
+        virtual ~RemoveRandomOperator() {};
         virtual std::string getName() const { return "REMOVE RANDOM"; }
         virtual std::string getActionName() const { return "removing random"; };
 
         virtual State apply(bool findBest) const {
-            uint toRemove = rand() % initialState.getAllBuildingsIDs().size();
+            if(initialState.getBuildings().size() == 0) return initialState;
+            
+            std::vector<uint> allIDs = initialState.getAllBuildingsIDs();
+            uint toRemove = rand() % allIDs.size();
             State state = initialState;
-            state.removeBuilding(toRemove);
+            state.removeBuilding(allIDs[toRemove]);
             return state;
         }
 };

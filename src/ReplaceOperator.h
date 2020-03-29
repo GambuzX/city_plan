@@ -7,6 +7,7 @@
 class ReplaceOperator : public Operator {
     public:
         ReplaceOperator(const State & s) : Operator(s) {}
+        virtual ~ReplaceOperator() {};
         virtual std::string getName() const { return "REPLACE"; }
         virtual std::string getActionName() const { return "replacing"; };
 
@@ -15,7 +16,7 @@ class ReplaceOperator : public Operator {
             int initialValue = initialState.value();
             bMatrix map = initialState.getFilledPositions();
             const std::vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-            std::list<uint> buildingsIDs = initialState.getAllBuildingsIDs();
+            std::vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
 
             // best choice variables    
             State state = initialState;

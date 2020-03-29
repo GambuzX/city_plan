@@ -6,6 +6,7 @@
 class RemoveOperator : public Operator {
     public:
         RemoveOperator(const State & s) : Operator(s) {}
+        virtual ~RemoveOperator() {};
         virtual std::string getName() const { return "REMOVE"; }
         virtual std::string getActionName() const { return "removing"; };
 
@@ -16,7 +17,7 @@ class RemoveOperator : public Operator {
             uint bestToRemove = 0;
             int bValue = initialValue, bEmptyCount = state.emptyCount();
 
-            std::list<uint> buildingsIDs = initialState.getAllBuildingsIDs();
+            std::vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
             for (uint b : buildingsIDs) {
 
                 Building removed = state.removeBuilding(b, false);

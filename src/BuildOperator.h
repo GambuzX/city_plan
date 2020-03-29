@@ -7,6 +7,7 @@
 class BuildOperator : public Operator {
     public:
         BuildOperator(const State & s) : Operator(s) {}
+        virtual ~BuildOperator() {};
         virtual std::string getName() const { return "BUILD"; }
         virtual std::string getActionName() const { return "building"; };
 

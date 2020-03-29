@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <list>
 #include <unordered_map>
 #include "Building.h"
 #include "InputParse.h"
@@ -15,8 +14,8 @@ class State {
         uint emptyCells;
         InputInfo * globalInfo;
         std::unordered_map<uint, Building> buildings;
-        std::list<uint> residentialBuildings; // ids of residential buildings
-        std::list<uint> utilityBuildings; // ids of utility buildings
+        std::vector<uint> residentialBuildings; // ids of residential buildings
+        std::vector<uint> utilityBuildings; // ids of utility buildings
         int minRow, maxRow, minCol, maxCol;
 
     public:
@@ -42,9 +41,9 @@ class State {
         uint emptyCount() const { return emptyCells; }
         InputInfo * getGlobalInfo() const { return globalInfo; }
         const std::unordered_map<uint, Building> & getBuildings() const { return buildings; }
-        const std::list<uint> & getResidentialBuildings() const { return residentialBuildings; }
-        const std::list<uint> & getUtilityBuildings() const { return utilityBuildings; }
-        std::list<uint> getAllBuildingsIDs() const;
+        const std::vector<uint> & getResidentialBuildings() const { return residentialBuildings; }
+        const std::vector<uint> & getUtilityBuildings() const { return utilityBuildings; }
+        std::vector<uint> getAllBuildingsIDs() const;
         int getMinRow() const { return minRow; }
         int getMaxRow() const { return maxRow; }
         int getMinCol() const { return minCol; }

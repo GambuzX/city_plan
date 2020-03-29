@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "State.h"
-#include "util.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -231,8 +231,8 @@ int State::value() const { //TODO calculate value when a building is adedd;
 }
 
 
-list<uint> State::getAllBuildingsIDs() const {
-    list<uint> allIDs = residentialBuildings;
+vector<uint> State::getAllBuildingsIDs() const {
+    vector<uint> allIDs = residentialBuildings;
     allIDs.insert(allIDs.end(), utilityBuildings.begin(), utilityBuildings.end());
     return allIDs;
 }

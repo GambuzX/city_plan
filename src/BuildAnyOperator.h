@@ -8,6 +8,7 @@
 class BuildAnyOperator : public Operator {
     public:
         BuildAnyOperator(const State & s) : Operator(s) {}
+        virtual ~BuildAnyOperator() {};
         virtual std::string getName() const { return "BUILD ANY"; }
         virtual std::string getActionName() const { return "building any"; };
 
@@ -16,10 +17,8 @@ class BuildAnyOperator : public Operator {
             bMatrix map = initialState.getFilledPositions();
 
             State state = initialState;
-            int initialValue = state.value();
-
-            for(int row = 0; row < map.size(); row++){
-                for(int col = 0; col <= map[0].size(); col++){
+            for(size_t row = 0; row < map.size(); row++){
+                for(size_t col = 0; col <= map[0].size(); col++){
 
                     // check if empty
                     if(map[row][col])
