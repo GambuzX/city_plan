@@ -75,3 +75,5 @@ namespace std
 }
 
 void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used);
+State generateState(InputInfo *globalInfo);
+std::vector<State> generatePopulation(InputInfo *global_info, int populationSize);

@@ -466,3 +466,39 @@ void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used) {
         }
     }
 }
+
+State generateState(InputInfo *globalInfo){
+    vector<Project> &projs = globalInfo->bProjects;
+
+    State s(globalInfo);
+
+    bMatrix used(globalInfo->rows, vector<bool>(globalInfo->cols, false));
+    int col_inc = 1;
+    for(int row = 0; row < globalInfo->rows; row += 1){
+        for(int col = 0; col < globalInfo->cols; col += col_inc){
+
+            if(used[row][col]) continue;
+            col_inc = 1;
+
+            Project & p = projs[rand() % projs.size()];
+
+            if(s.canCreateBuilding(&p, row, col, &used)){
+                s.createBuilding(&p, row, col);
+                updateUsedMap(used, &p, row, col, true);
+                col_inc = p.getPlan()[0].size();
+            }
+        }
+    }
+
+    return s;
+}
+
+vector<State> generatePopulation(InputInfo *global_info, int populationSize){
+    vector<State> population(populationSize);
+
+    for(int i = 0; i < populationSize; i++){
+        population[i] = generateState(global_info);
+    }
+
+    return population;
+}
