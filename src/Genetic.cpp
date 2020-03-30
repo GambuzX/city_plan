@@ -17,8 +17,10 @@ State mutate(State & s);
 State bestIndividual(State * population, int populationSize);
 pair<int, int> bestValue(State * population, int populationSize);
 int tournamentSelection(State * population, int populationSize, int np);
+int roulleteSelection(State * population, int populationSize);
 
 int randPercent() { return (rand() % 100) + 1; }
+double randZeroOne() { return (double) rand() / RAND_MAX; }
 
 void printGenerationProgress(int gen, int total, string msg) {
     cout << "\r                                                   " << std::flush;
@@ -41,8 +43,8 @@ State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generatio
         for (int p = 0; p < populationSize; p++) {
             // select parents to breed
             printGenerationProgress(p+1, populationSize, "Selecting parents");
-            const State & p1 = population[tournamentSelection(population, populationSize, np)];
-            const State & p2 = population[tournamentSelection(population, populationSize, np)];
+            const State & p1 = population[roulleteSelection(population, populationSize)];
+            const State & p2 = population[roulleteSelection(population, populationSize)];
 
             // child
             printGenerationProgress(p+1, populationSize, "Breeding parents");
@@ -166,4 +168,27 @@ int tournamentSelection(State * population, int populationSize, int np) {
         }
     }
     return bI;
+}
+
+int roulleteSelection(State * population, int populationSize) {
+    
+    int total = 0;
+    vector<double> cumulativeValues;
+    for (int i = 0; i < populationSize; i++) {
+        const State & s = population[i];
+        int value = s.value();
+        total += value;
+        cumulativeValues.push_back(total);
+    }
+
+    double choice = randZeroOne();
+    for (size_t i = 0; i < cumulativeValues.size(); i++) {
+        cumulativeValues[i] = cumulativeValues[i] * 1.0 / total;
+
+        if(i == 0 && choice <= cumulativeValues[i]) return i;
+        if(cumulativeValues[i-1] < choice && choice <= cumulativeValues[i]) return i;
+    }
+
+    // error, return first
+    return 0;
 }
