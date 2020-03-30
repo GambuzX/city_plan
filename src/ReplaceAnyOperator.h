@@ -43,11 +43,14 @@ class ReplaceAnyOperator : public Operator {
                     Project * proj = (Project*) &projects[projectIndex]; 
                     if(proj->getID() == removed.getProject()->getID()) continue;
 
+                    std::cout << "[*] Number of buildings  " << buildingsIDs.size() << std::endl;
+
                     // check if can create
                     if(state.canCreateBuilding(proj, row, col, &map)){
                         std::cout << "[*] Replaced  " << buildingIndex << " of project " << removed.getProject()->getID() << " for " << proj->getID() << std::endl;
                     
                         state.createBuilding(proj, row, col);
+                        std::cout << "[*] Number of buildings  " << buildingsIDs.size() << std::endl;
                         return state;
                     } 
                 }
