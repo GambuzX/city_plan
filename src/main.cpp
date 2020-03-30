@@ -27,40 +27,69 @@ int main(int argc, char * argv[]) {
     do{
         int option = menu();
 
+        if(option < 1 || option > 3){
+            return 0;
+        }
+
         string fileName;
         if(argc > 1){
             fileName = argv[1];
         }else{
-            fileName = chooseFileName();
+            fileName = chooseInputFileName();
         }
 
         InputInfo globalInfo = parseInput(fileName);
 
+        State bestValue;
+
         switch(option){
-            case 1:{
-                /*HILL CLIMBING*/
-                /* TODO
-                    - booleano -> determinar se faz a pesquisa completa
-                */
-                State localMaximum = hillClimbing(&globalInfo);
+            case 1:{ /*HILL CLIMBING*/
+                
+                cout << endl << " Do you want to find the best neighbour?" << endl;
+                cout << " [Y/N] (default is N): ";
+                bool findBestNeighbour = false;
+                char bestNeighbourOption;
+                cin >> bestNeighbourOption;
+                cout << endl;
+                
+                if(toupper(bestNeighbourOption) == 'Y'){
+                    findBestNeighbour = true;
+                }
+
+                bestValue = hillClimbing(&globalInfo, findBestNeighbour);
                 break;
             }
-            case 2:{ 
-                /*SIMULATED ANNEALING*/
+            case 2:{ /*SIMULATED ANNEALING*/
+                
                 break;
             }
-            case 3:{ 
-                /*ALGORITMO GENÉTICO*/
-                /* TODO
-                    - tamanho da população
-                    - probabilidade de mutação 
-                    - número de gerações
-                */
+            case 3:{ /*GENETIC ALGORITHM*/
+
+                SelectionAlgorithm selectionAlgorithm = chooseSelectionAlgorithm();
+                BreedingAlgorithm breedingAlgorithm = chooseBreedingAlgorithm();
+                int populationSize = choosePopulationSize();
+                int generations = chooseGenerations();
+                double mutationChance = chooseMutationChance();
+                int np = 3;
+
+                if(selectionAlgorithm == SelectionAlgorithm::Tournament){
+                    np = chooseNP(populationSize);
+                }
+
+                bestValue = geneticAlgorithm(
+                    &globalInfo,
+                    selectionAlgorithm, 
+                    breedingAlgorithm, 
+                    populationSize, 
+                    generations, 
+                    mutationChance, 
+                    np
+                );
+
                 break;
             }
             default:{
-                exit = true;
-                break;
+                return 0;
             }
         }
     }while(!exit);

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-State hillClimbing(InputInfo * info) { // order buildings by occupied size / value rating ??
+State hillClimbing(InputInfo * info, bool findBestNeighbour) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;
 
@@ -27,7 +27,7 @@ State hillClimbing(InputInfo * info) { // order buildings by occupied size / val
     while(1) {
             
         cout << "[+] Searching for neighbour" << endl;
-        State neighbour = higherValueNeighbour(currentState, false);
+        State neighbour = higherValueNeighbour(currentState, findBestNeighbour);
         currentValue = neighbour.value();
         currentEmpty = neighbour.emptyCount();
 
