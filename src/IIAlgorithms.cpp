@@ -197,9 +197,8 @@ State randomNeighbour(const State & state){
     return newState;
 }
 
-State simulatedAnnealing(const State & initialState, int maxSteps, int temperature){
-    //initialState.printMap();
-    State currentState = initialState;
+State simulatedAnnealing(InputInfo * info, int maxSteps, int temperature){
+    State currentState = generateState(info);
     int currentValue = currentState.value();
     int stepCount = 0;
 
