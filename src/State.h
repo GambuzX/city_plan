@@ -22,11 +22,7 @@ class State {
 
         State() {}
         State(InputInfo * globalInfo);
-
         State(const State &s);
-
-        State(std::vector<std::vector<uint>> v1, std::unordered_map<uint, Building> um1, uint max_id1, 
-              std::vector<std::vector<uint>> v2, std::unordered_map<uint, Building> um2, InputInfo *globalInfo);
 
         bool addRandomBuilding();
         bool canCreateBuilding(Project * proj, int row, int col) const;
@@ -75,3 +71,6 @@ namespace std
 }
 
 void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used);
+State generateState(InputInfo *globalInfo);
+std::vector<State> generatePopulation(InputInfo *global_info, int populationSize);
+State * generatePopulationPtr(InputInfo *global_info, int populationSize);

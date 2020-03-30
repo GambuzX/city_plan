@@ -7,6 +7,7 @@
 class ReplaceOperator : public Operator {
     public:
         ReplaceOperator(const State & s) : Operator(s) {}
+        virtual ~ReplaceOperator() {};
         virtual std::string getName() const { return "REPLACE"; }
         virtual std::string getActionName() const { return "replacing"; };
 

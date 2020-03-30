@@ -6,6 +6,7 @@
 class RemoveOperator : public Operator {
     public:
         RemoveOperator(const State & s) : Operator(s) {}
+        virtual ~RemoveOperator() {};
         virtual std::string getName() const { return "REMOVE"; }
         virtual std::string getActionName() const { return "removing"; };
 

@@ -6,10 +6,13 @@
 #include <time.h>
 
 #include "IIAlgorithms.h"
-#include "util.h"
+#include "Util.h"
 #include "BuildOperator.h"
 #include "RemoveOperator.h"
 #include "ReplaceOperator.h"
+#include "BuildAnyOperator.h"
+#include "RemoveRandomOperator.h"
+#include "ReplaceAnyOperator.h"
 
 using namespace std;
 
@@ -74,111 +77,16 @@ State higherValueNeighbour(const State & state, bool findBest){
         }
     }
 
+    for(size_t i = 0; i < operators.size(); i++) delete operators[i];
     return bestState;
-}
-
-State breeding(const State &s1, const State &s2){
-    uint num_rows = s1.getGlobalInfo()->rows;
-    uint mid_row = num_rows / 2;
-    uint num_cols = s1.getGlobalInfo()->cols;
-
-    tuple<vector<vector<uint>>, vector<vector<uint>>, uint> s1_results = divideState(s1, num_rows, mid_row, num_cols);
-    tuple<vector<vector<uint>>, vector<vector<uint>>, uint> s2_results = divideState(s2, num_rows, mid_row, num_cols);
-    
-    State new_s1 = State(get<0>(s1_results), s1.getBuildings(), get<2>(s1_results), get<1>(s2_results), s2.getBuildings(), s1.getGlobalInfo());
-    State new_s2 = State(get<0>(s2_results), s2.getBuildings(), get<2>(s2_results), get<1>(s1_results), s1.getBuildings(), s2.getGlobalInfo());
-    
-    int v1 = new_s1.value();
-    int v2 = new_s2.value();
-    if(v1 > v2)
-        return new_s1;
-    if(v2 > v1)
-        return new_s2;
-
-    if(new_s1.emptyCount() >= new_s2.emptyCount())
-        return new_s1;
-    
-    return new_s2;
-}
-
-tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State &s, const uint &num_rows, const uint &mid_row, const uint &num_cols){
-    vector<uint> buildingIDs = s.getAllBuildingsIDs();
-    unordered_map<uint, Building> buildings = s.getBuildings();
-
-    vector<vector<uint>> top = vector<vector<uint>>(mid_row, vector<uint>(num_cols, 0));
-    vector<vector<uint>> bottom = vector<vector<uint>>(num_rows-mid_row, vector<uint>(num_cols, 0));
-
-    uint top_max_id = 0;
-
-    for(size_t i = 0; i < buildingIDs.size(); i++){
-        Building b = buildings.at(buildingIDs[i]);
-
-        if(b.getRow() < (int)mid_row){
-            if(b.getRow() + b.getProject()->getPlan().size() <= mid_row){
-                for(size_t j = 0; j < b.getProject()->getPlan().size(); j++){
-                    for(size_t k = 0; k < b.getProject()->getPlan()[0].size(); k++){
-                        top[b.getRow() + j][b.getCol() + k] = b.getProject()->getID();
-                    }
-                }
-                if(buildingIDs[i] > top_max_id)
-                    top_max_id = buildingIDs[i];
-            }else
-                continue;
-            
-        }else{
-            for(size_t j = 0; j < b.getProject()->getPlan().size(); j++){
-                for(size_t k = 0; k < b.getProject()->getPlan()[0].size(); k++){
-                    bottom[b.getRow() + j - mid_row][b.getCol() + k] = b.getProject()->getID();
-                }
-            }
-        }
-    } 
-
-    return make_tuple(top, bottom, top_max_id);
-}
-
-State generateState(InputInfo *globalInfo){
-    vector<Project> &projs = globalInfo->bProjects;
-
-    State s(globalInfo);
-
-    bMatrix used(globalInfo->rows, vector<bool>(globalInfo->cols, false));
-    int col_inc = 1;
-    for(int row = 0; row < globalInfo->rows; row += 1){
-        for(int col = 0; col < globalInfo->cols; col += col_inc){
-
-            if(used[row][col]) continue;
-            col_inc = 1;
-
-            Project & p = projs[rand() % projs.size()];
-
-            if(s.canCreateBuilding(&p, row, col, &used)){
-                s.createBuilding(&p, row, col);
-                updateUsedMap(used, &p, row, col, true);
-                col_inc = p.getPlan()[0].size();
-            }
-        }
-    }
-
-    return s;
-}
-
-vector<State> generatePopulation(InputInfo *global_info, int populationSize){
-    vector<State> population(populationSize);
-
-    for(int i = 0; i < populationSize; i++){
-        population[i] = generateState(global_info);
-    }
-
-    return population;
 }
 
 State randomNeighbour(const State & state){
     // operators to apply, in sequence
     vector<Operator*> operators{
-        new BuildOperator(state),
-        new ReplaceOperator(state),
-        new RemoveOperator(state)
+        new BuildAnyOperator(state),
+        new ReplaceAnyOperator(state),
+        new RemoveRandomOperator(state)
     };
 
     int prevValue = state.value();
@@ -198,8 +106,11 @@ State randomNeighbour(const State & state){
 }
 
 State simulatedAnnealing(InputInfo * info, int maxSteps, int temperature){
+    srand(time(NULL));
+
     State currentState = generateState(info);
     int currentValue = currentState.value();
+    cout << "[+] Starting state: " << currentValue << endl << endl;
     int stepCount = 0;
 
     while(stepCount < maxSteps && temperature){
@@ -229,4 +140,3 @@ State simulatedAnnealing(InputInfo * info, int maxSteps, int temperature){
     
     return currentState;
 }
-
