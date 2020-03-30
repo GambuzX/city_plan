@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#define NUM_MAX_OPTIONS 4
-
 using namespace std;
 
 void drawLogo(){
@@ -45,13 +43,21 @@ int menu(){
     return option;
 }
 
-string chooseInputFileName(){
-    cout << " CHOOSE INPUT OPTION: ";
+string chooseFileName(string oper){
+    cout << " CHOOSE " << oper << " OPTION: ";
 
     string fileName;
     cin >> fileName;
     
     return fileName;
+}
+
+string chooseInputFileName(){
+    return chooseFileName("INPUT");
+}
+
+string chooseOutputFileName(){
+    return chooseFileName("OUTPUT");
 }
 
 SelectionAlgorithm chooseSelectionAlgorithm(){

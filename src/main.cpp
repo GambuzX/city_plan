@@ -7,6 +7,9 @@
 #include "IIAlgorithms.h"
 #include "Genetic.h"
 #include "Interface.h"
+#include "CreateOutput.h"
+
+#define NUM_MAX_ALGORITHMS NUM_MAX_OPTIONS - 1
 
 using namespace std;
 
@@ -27,7 +30,7 @@ int main(int argc, char * argv[]) {
     do{
         int option = menu();
 
-        if(option < 1 || option > 3){
+        if(option < 1 || option > NUM_MAX_ALGORITHMS){
             return 0;
         }
 
@@ -40,7 +43,7 @@ int main(int argc, char * argv[]) {
 
         InputInfo globalInfo = parseInput(fileName);
 
-        State bestValue;
+        State finalState;
 
         switch(option){
             case 1:{ /*HILL CLIMBING*/
@@ -56,7 +59,7 @@ int main(int argc, char * argv[]) {
                     findBestNeighbour = true;
                 }
 
-                bestValue = hillClimbing(&globalInfo, findBestNeighbour);
+                finalState = hillClimbing(&globalInfo, findBestNeighbour);
                 break;
             }
             case 2:{ /*SIMULATED ANNEALING*/
@@ -76,7 +79,7 @@ int main(int argc, char * argv[]) {
                     np = chooseNP(populationSize);
                 }
 
-                bestValue = geneticAlgorithm(
+                finalState = geneticAlgorithm(
                     &globalInfo,
                     selectionAlgorithm, 
                     breedingAlgorithm, 
@@ -92,6 +95,15 @@ int main(int argc, char * argv[]) {
                 return 0;
             }
         }
+
+        if(argc > 2){
+            fileName = argv[2];
+        }else{
+            fileName = chooseOutputFileName();
+        }
+
+        createOutput(finalState, fileName);
+        
     }while(!exit);
 
     

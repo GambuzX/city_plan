@@ -7,14 +7,25 @@
 using namespace std;
 
 void createOutput(const State &finalState, string outputFileName){
-    cout << "CREATING OUTPUT..." << endl;
+    cout << endl << "[+] CREATING OUTPUT" << endl;
 
     if(outputFileName.length() == 0){
-        cout << "Using default output file: outputs/default.txt" << endl;
+        cout << "[!] Using default output file: outputs/default.txt" << endl;
         outputFileName = "outputs/default.txt";
     }
-    
-    ofstream f(outputFileName);
+    else{
+        cout << "[!] OUTPUT FILE NAME: " << outputFileName << endl;
+    }
+    cin.ignore();
+    ofstream f;
+    do{
+        f.open(outputFileName);
+        if(f.fail()){
+            cout << "[?] ERROR: CAN'T OPEN FILE. MAKE SURE THE DIRECTORY 'outputs/' EXISTS." << endl;
+            cout << "[?] PLEASE PRESS ANY KEY WHEN YOU CREATE THE DIRECTORY." << endl;
+            cin.ignore();
+        }
+    }while(f.fail());
 
     unordered_map<uint, Building> buildings = finalState.getBuildings();
 
@@ -25,6 +36,8 @@ void createOutput(const State &finalState, string outputFileName){
           << (*it).second.getRow() << " " 
           << (*it).second.getCol() << endl;
     }
+
+    cout << "[!] DONE" << endl;
 
     f.close();
 }

@@ -4,11 +4,14 @@
 
 #include "Genetic.h"
 
+#define NUM_MAX_OPTIONS 4
+
 void drawLogo();
 int menu();
 
-/*Input File Name*/
+/*File Names*/
 std::string chooseInputFileName();
+std::string chooseOutputFileName();
 
 /*Genetic Algortihms Parameters*/
 SelectionAlgorithm chooseSelectionAlgorithm();
