@@ -6,6 +6,7 @@
 #include "InputParse.h"
 
 typedef unsigned int uint;
+typedef std::vector<std::vector<bool>> bMatrix;
 
 class State {
     private:
@@ -13,14 +14,13 @@ class State {
         uint emptyCells;
         InputInfo * globalInfo;
         std::unordered_map<uint, Building> buildings;
-        std::vector<std::vector<uint>> cityMap;
         std::vector<uint> residentialBuildings; // ids of residential buildings
         std::vector<uint> utilityBuildings; // ids of utility buildings
         int minRow, maxRow, minCol, maxCol;
 
-        void updateMapLimits(int sRow, int eRow, int sCol, int eCol);
     public:
 
+        State() {}
         State(InputInfo * globalInfo);
 
         State(const State &s);
@@ -30,17 +30,21 @@ class State {
 
         bool addRandomBuilding();
         bool canCreateBuilding(Project * proj, int row, int col) const;
-        uint createBuilding(Project * proj, int row, int col);
-        void removeBuilding(uint id);
+        bool canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos) const;
+        uint createBuilding(Project * proj, int row, int col, bool updateLimits = true);
+        Building removeBuilding(uint id, bool updateLimits = true);
+        void updateMapLimitsCreate(Project * proj, int row, int col);
+        void updateMapLimitsRemove(const Building & removed);
         int value() const;
         void printMap() const;
         bool isPositionNearBuildings(int row, int col) const;
+        std::vector<std::vector<uint>> getCityMap() const;
+        bMatrix getFilledPositions() const;
 
         uint getNextID() const { return nextID; }
         uint emptyCount() const { return emptyCells; }
         InputInfo * getGlobalInfo() const { return globalInfo; }
         const std::unordered_map<uint, Building> & getBuildings() const { return buildings; }
-        const std::vector<std::vector<uint>> & getCityMap() const { return cityMap; }
         const std::vector<uint> & getResidentialBuildings() const { return residentialBuildings; }
         const std::vector<uint> & getUtilityBuildings() const { return utilityBuildings; }
         std::vector<uint> getAllBuildingsIDs() const;
@@ -49,7 +53,10 @@ class State {
         int getMinCol() const { return minCol; }
         int getMaxCol() const { return maxCol; }
 
-        bool operator ==(const State& s) const;
+        bool operator==(const State& s) const;
+
+        static bool betterState(const State & s1, const State & s2);
+        static bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells);
 };
 
 namespace std
@@ -66,3 +73,5 @@ namespace std
         }
     };
 }
+
+void updateUsedMap(bMatrix & map, Project * p, int row, int col, bool used);

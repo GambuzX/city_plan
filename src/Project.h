@@ -29,5 +29,5 @@ class Project {
         int getID() { return this->id; }
         BuildingType getType() { return this->type; }
         int getValue() { return this->value; }
-        std::vector<std::vector<char>> getPlan() const { return plan; }
+        const std::vector<std::vector<char>> & getPlan() const { return plan; }
 };

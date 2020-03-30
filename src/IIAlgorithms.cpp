@@ -3,231 +3,77 @@
 #include <climits>
 #include <tuple>
 #include <random>
+#include <time.h>
 
 #include "IIAlgorithms.h"
 #include "util.h"
+#include "BuildOperator.h"
+#include "RemoveOperator.h"
+#include "ReplaceOperator.h"
 
 using namespace std;
 
-State randomStart(const State & initialState);
-State addBuildingOperator(const State & initialState, bool findBest);
-State removeBuildingOperator(const State & initialState, bool findBest);
-State replaceBuildingOperator(const State & initialState, bool findBest);
-
-bool betterState(const State & s1, const State & s2) {
-    int s1Val = s1.value();
-    int s2Val = s2.value();
-    return s2Val > s1Val || (s2Val == s1Val && s2.emptyCount() > s1.emptyCount());
-}
-
-bool betterState(int pValue, int pEmptyCells, int nValue, int nEmptyCells) {
-    return nValue > pValue || (nValue == pValue && nEmptyCells > pEmptyCells);
-}
-
-State hillClimbing(const State & initialState) { // order buildings by occupied size / value rating ??
+State hillClimbing(InputInfo * info) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;
-    //initialState.printMap();
 
-    cout << "[+] Choosing first building" << endl << endl;
-    State currentState = randomStart(initialState); // random first choice, cuz no points. check both values at different steps
-    //currentState.printMap();
-    int previousValue, currentValue;
+    cout << "[+] Generating initial state" << endl;
+    State currentState = generateState(info);
+    int previousValue, currentValue, previousEmpty, currentEmpty;   
     previousValue = currentValue = currentState.value();
+    previousEmpty = currentEmpty = currentState.emptyCount();
 
+    cout << "[!] Initial state (value, emptyCells): (" << currentValue << ", " << currentEmpty << ")" << endl << endl;
     while(1) {
             
         cout << "[+] Searching for neighbour" << endl;
         State neighbour = higherValueNeighbour(currentState, false);
         currentValue = neighbour.value();
+        currentEmpty = neighbour.emptyCount();
 
-        if (currentValue <= previousValue) {     
-            if(currentValue == previousValue && currentState.addRandomBuilding()) {
-                cout << "[+] Added a random building" << endl << endl;
-                previousValue = currentState.value();
-                continue;
-            }
-            cout << "[+] Reached local maximum: " << currentValue << endl;
-            //neighbour.printMap();
+        if (!State::betterState(previousValue, previousEmpty, currentValue, currentEmpty)) {
+            cout << "[!] Could not find a better neighbour" << endl;
+            cout << "[!] Reached local maximum: (" << previousValue << ", " << previousEmpty << ")" << endl;
             break;
         }
 
-        cout << "[+] Found neighbour: " << currentValue << endl << endl;
-        //neighbour.printMap();
+        cout << "[!] Found neighbour: (" << currentValue << ", " << currentEmpty << ")" << endl << endl;
         currentState = neighbour;
         previousValue = currentValue;
+        previousEmpty = currentEmpty;
     }
     
     return currentState;
 }
 
-State randomStart(const State & initialState) { // TODO not random. should it be?
-    vector<Project> & projs = initialState.getGlobalInfo()->bProjects;
-    State newState = initialState;
-    newState.createBuilding(&projs[0], 0, 0);
-    return newState;
-}
-
 
 State higherValueNeighbour(const State & state, bool findBest){
-    State * bestState = (State*) &state;
-    int bestValue = state.value();
+    // operators to apply, in sequence
+    vector<Operator*> operators{
+        new BuildOperator(state),
+        new ReplaceOperator(state),
+        new RemoveOperator(state)
+    };
 
-    // Add building. First because its the one who can score more points
-    cout << "[!] Applying ADD operator" << endl;
-    State addState = addBuildingOperator(state, findBest);
-    int addStateValue = addState.value();
+    int bestValue, bestEmpty, newVal, newEmpty;
+    State bestState = state;
+    bestValue = state.value();
+    bestEmpty = state.emptyCount();
 
-    if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
-        cout << "[!] Found better state by building, value: " << addStateValue << endl;
-        if(!findBest) return addState;
-        bestState = &addState;
-        bestValue = addStateValue;
-    }
-
-    // Replace building. Second because can still increase points
-    cout << "[!] Applying REPLACE operator" << endl;
-    State replaceState = replaceBuildingOperator(state, findBest);
-    int replaceStateValue = replaceState.value();
-    if(betterState(bestValue, bestState->emptyCount(), replaceStateValue, replaceState.emptyCount())) {
-        cout << "[!] Found better state by replacing, value: " << replaceStateValue << endl;
-        if(!findBest) return replaceState;
-        bestState = &replaceState;
-        bestValue = replaceStateValue;
-    }
-
-    // Remove building. Can only improve by having same value and less occupied cells
-    cout << "[!] Applying REMOVE operator" << endl;
-    State removeState = removeBuildingOperator(state, findBest);
-    int removeStateValue = removeState.value();
-    if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
-        cout << "[!] Found better state by removing, value: " << removeStateValue << endl;
-        if(!findBest) return removeState;
-        bestState = &removeState;
-        bestValue = removeStateValue;
-    }
-
-    return *bestState;
-}
-
-State addBuildingOperator(const State & initialState, bool findBest = false){
-    int D = initialState.getGlobalInfo()->maxWalkDist;
-    const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-    const vector<vector<uint>> & map = initialState.getCityMap();
-
-    State state = initialState;
-    int initialValue = state.value();
-
-    Project * bProject;
-    uint bEmptyCount = state.emptyCount();
-    int bRow, bCol, bValue = initialValue;
-
-    int minRow = max(0, initialState.getMinRow()-D);
-    int maxRow = min((int)map.size()-1, initialState.getMaxRow() + D);
-    int minCol = max(0, initialState.getMinCol()-D);
-    int maxCol = min((int)map[0].size()-1, initialState.getMaxCol() + D);
-
-    for(int row = minRow; row <= maxRow; row++){
-        for(int col = minCol; col <= maxCol; col++){
-
-            // check if empty
-            if(map[row][col] != 0)
-                continue;
-            
-            // try to build all projects
-            for(size_t p = 0; p < projects.size(); p++) {
-                Project * currProject = (Project *) &projects[p];
-
-                if(state.canCreateBuilding(currProject, row, col)){ // x = col, y = row
-
-                    // create building and check its value
-                    uint newBuildingID = state.createBuilding(currProject, row, col);
-                    int newStateValue = state.value();                    
-
-                    if(betterState(bValue, bEmptyCount, newStateValue, state.emptyCount())) {
-                        // if only want a better solution return immediatelly
-                        if(!findBest) return state;
-
-                        // assign variables
-                        bProject = currProject;
-                        bRow = row;
-                        bCol = col;
-                        bValue = newStateValue;
-                        bEmptyCount = state.emptyCount();
-                    }
-
-                    // remove building to maintain state
-                    state.removeBuilding(newBuildingID);
-                } 
-            }
-        }
-    }
-    // reached a better solution
-    if(betterState(initialValue, state.emptyCount(), bValue, bEmptyCount)) {
-        state.createBuilding(bProject, bRow, bCol);
-        return state;
-    }
-
-    return initialState;
-}
-
-State removeBuildingOperator(const State & initialState, bool findBest){ // TODO do not copy states, instead apply change and then the reverse at the end
-    State bestState = initialState;
-    int bestValue = initialState.value();
-
-    vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
-    for (int b : buildingsIDs) {
-        State newState = initialState;
-        newState.removeBuilding(b);
-        int newStateValue = newState.value();
-
-        if(betterState(bestValue, bestState.emptyCount(), newStateValue, newState.emptyCount())) {
+    for (Operator * op : operators) {
+        cout << "[+] Applying " << op->getName() << " operator" << endl;
+        State newState = op->apply(findBest);
+        newVal = newState.value();
+        newEmpty = newState.emptyCount();
+        if(State::betterState(bestValue, bestEmpty, newVal, newEmpty)) {
+            cout << "[!] Found better state by " << op->getActionName() << ": (" << newVal << ", " << newEmpty << ")" << endl;
             if(!findBest) return newState;
-
             bestState = newState;
-            bestValue = newStateValue;
-        }
-
-    }
-    return bestState;
-}
-
-State replaceBuildingOperator(const State & initialState, bool findBest){
-    const unordered_map<uint, Building> & buildings = initialState.getBuildings();
-    const vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
-
-    State bestState = initialState;
-    int bestValue = initialState.value();
-
-    vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
-    for (int b : buildingsIDs) {
-        unordered_map<uint, Building>::const_iterator it = buildings.find(b);
-        if(it == buildings.end()) continue;
-
-        // remove building so that it can be replaced
-        State newStateRemove = initialState;
-        newStateRemove.removeBuilding(b);
-
-        // try to replace removed building with all projects
-        for (size_t p = 0; p < projects.size(); p++) {
-            Project * proj = (Project*) &projects[p];
-            if(it->second.getProject()->getID() == proj->getID()) continue;
-
-            if(newStateRemove.canCreateBuilding(proj, it->second.getRow(), it->second.getCol())) {
-                State newStateReplace = newStateRemove;
-                newStateReplace.createBuilding(proj, it->second.getRow(), it->second.getCol());
-                int newStateValue = newStateReplace.value();
-
-                if(betterState(bestValue, bestState.emptyCount(), newStateValue, newStateReplace.emptyCount())) {
-                    if(!findBest) return newStateReplace;
-
-                    bestState = newStateReplace;
-                    bestValue = newStateValue;
-                }
-
-            }
+            bestValue = newVal;
+            bestEmpty = newEmpty;
         }
     }
+
     return bestState;
 }
 
@@ -291,27 +137,25 @@ tuple<vector<vector<uint>>, vector<vector<uint>>, uint> divideState(const State 
     return make_tuple(top, bottom, top_max_id);
 }
 
-State generate_state(InputInfo *global_info){
-    srand(time(NULL));
-    vector<Project> &projs = global_info->bProjects;
+State generateState(InputInfo *globalInfo){
+    vector<Project> &projs = globalInfo->bProjects;
 
-    State s(global_info);
+    State s(globalInfo);
 
-    size_t i_inc = 1, j_inc = 1;
+    bMatrix used(globalInfo->rows, vector<bool>(globalInfo->cols, false));
+    int col_inc = 1;
+    for(int row = 0; row < globalInfo->rows; row += 1){
+        for(int col = 0; col < globalInfo->cols; col += col_inc){
 
-    for(size_t i = 0; i < s.getCityMap().size(); i += i_inc){
-        i_inc = 1;
-        for(size_t j = 0; j < s.getCityMap()[i].size(); j += j_inc){
-            j_inc = 1;
-            Project p = projs[rand() % projs.size()];
+            if(used[row][col]) continue;
+            col_inc = 1;
 
-            if(s.canCreateBuilding(&p, i, j)){
-                s.createBuilding(&p, i, j);
-                auto plan = p.getPlan();
-                j_inc = plan[0].size();
-                if(i_inc < plan.size()){
-                    i_inc = plan.size();
-                }
+            Project & p = projs[rand() % projs.size()];
+
+            if(s.canCreateBuilding(&p, row, col, &used)){
+                s.createBuilding(&p, row, col);
+                updateUsedMap(used, &p, row, col, true);
+                col_inc = p.getPlan()[0].size();
             }
         }
     }
@@ -319,62 +163,38 @@ State generate_state(InputInfo *global_info){
     return s;
 }
 
-unordered_set<State> generate_states(InputInfo *global_info, int num_states){
-    unordered_set<State> state_set;
+vector<State> generatePopulation(InputInfo *global_info, int populationSize){
+    vector<State> population(populationSize);
 
-    for(int i = 0; i < num_states; i++){
-        State s = generate_state(global_info);
-        
-        auto set_pair = state_set.insert(s);
-        
-        // If the the second value from the returning pair is false, 
-        // the state already exists in the set 
-        if(set_pair.second == false)
-            i--; 
+    for(int i = 0; i < populationSize; i++){
+        population[i] = generateState(global_info);
     }
 
-    return state_set;
+    return population;
 }
 
 State randomNeighbour(const State & state){
-    State * bestState = (State*) &state;
-    int bestValue = state.value();
+    // operators to apply, in sequence
+    vector<Operator*> operators{
+        new BuildOperator(state),
+        new ReplaceOperator(state),
+        new RemoveOperator(state)
+    };
 
-    // Add building. First because its the one who can score more points
-    cout << "[!] Applying ADD operator" << endl;
-    State addState = addBuildingOperator(state, findBest);
-    int addStateValue = addState.value();
+    int prevValue = state.value();
 
-    if(betterState(bestValue, bestState->emptyCount(), addStateValue, addState.emptyCount())) {
-        cout << "[!] Found better state by building, value: " << addStateValue << endl;
-        if(!findBest) return addState;
-        bestState = &addState;
-        bestValue = addStateValue;
+    State newState = state;
+
+    for (Operator * op : operators) {
+        cout << "[+] Applying " << op->getName() << " operator" << endl;
+        State newState = op->apply(false);
+        int newVal = newState.value();
+        if(prevValue != newVal) {
+            break;
+        }
     }
 
-    // Replace building. Second because can still increase points
-    cout << "[!] Applying REPLACE operator" << endl;
-    State replaceState = replaceBuildingOperator(state, findBest);
-    int replaceStateValue = replaceState.value();
-    if(betterState(bestValue, bestState->emptyCount(), replaceStateValue, replaceState.emptyCount())) {
-        cout << "[!] Found better state by replacing, value: " << replaceStateValue << endl;
-        if(!findBest) return replaceState;
-        bestState = &replaceState;
-        bestValue = replaceStateValue;
-    }
-
-    // Remove building. Can only improve by having same value and less occupied cells
-    cout << "[!] Applying REMOVE operator" << endl;
-    State removeState = removeBuildingOperator(state, findBest);
-    int removeStateValue = removeState.value();
-    if(betterState(bestValue, bestState->emptyCount(), removeStateValue, removeState.emptyCount())) {
-        cout << "[!] Found better state by removing, value: " << removeStateValue << endl;
-        if(!findBest) return removeState;
-        bestState = &removeState;
-        bestValue = removeStateValue;
-    }
-
-    return *bestState;
+    return newState;
 }
 
 State simulatedAnnealing(const State & initialState, int maxSteps, int temperature){
@@ -389,7 +209,7 @@ State simulatedAnnealing(const State & initialState, int maxSteps, int temperatu
 
         cout << "[+] Searching for neighbour" << endl;
         State neighbour = randomNeighbour(currentState);
-        neighbourValue = neighbour.value();
+        int neighbourValue = neighbour.value();
 
         if (currentValue >= neighbourValue){  
             double randomValue = ((double)rand()) / ((double)RAND_MAX);   
