@@ -7,12 +7,16 @@
 #include "ReplaceOperator.h"
 #include "ReplaceAnyOperator.h"
 
+#include <set>
+#include <algorithm>
+
 using namespace std;
 
 State breed(const State &s1, const State &s2);
 State mutate(State & s);
 State bestIndividual(State * population, int populationSize);
 pair<int, int> bestValue(State * population, int populationSize);
+int tournamentSelection(State * population, int populationSize, int np);
 
 int randPercent() { return (rand() % 100) + 1; }
 
@@ -21,13 +25,15 @@ void printGenerationProgress(int gen, int total, string msg) {
     cout << "\r[" << gen << "/" << total << "] " << msg << std::flush;
 }
 
-State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generations, double mutationChance) {
+State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generations, double mutationChance, int np) {
 
     cout << "[+] Starting genetic algorithm" << endl;
 
     cout << "[+] Generating initial population of size " << populationSize << endl;
     State * population = generatePopulationPtr(globalInfo, populationSize);
-    cout << "[!] Initial population generated" << endl << endl;
+    pair<int,int> startBest = bestValue(population, populationSize);
+    cout << "[!] Initial population generated" << endl;
+    cout << "[!] Fittest starting individual is: (" <<  startBest.first << ", " << startBest.second << ")" << endl << endl;
 
     for(int g = 0; g < generations; g++) {
         cout << "[+] Starting generation " << g+1 << "/" << generations << endl;
@@ -35,8 +41,8 @@ State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generatio
         for (int p = 0; p < populationSize; p++) {
             // select parents to breed
             printGenerationProgress(p+1, populationSize, "Selecting parents");
-            const State & p1 = population[0]; // implement selection algorithm
-            const State & p2 = population[1];
+            const State & p1 = population[tournamentSelection(population, populationSize, np)];
+            const State & p2 = population[tournamentSelection(population, populationSize, np)];
 
             // child
             printGenerationProgress(p+1, populationSize, "Breeding parents");
@@ -133,8 +139,31 @@ pair<int, int> bestValue(State * population, int populationSize) {
         int nEmpty = population[i].emptyCount();
         if (State::betterState(bVal, bEmpty, nVal, nEmpty)) {
             bVal = nVal;
-            bEmpty = nVal;
+            bEmpty = nEmpty;
         }
     }
     return make_pair(bVal, bEmpty);
+}
+
+int tournamentSelection(State * population, int populationSize, int np) {
+    // choose participants
+    np = min(np, populationSize);
+    set<int> choosen;
+    while(choosen.size() < (size_t) np) {
+        int choice = random() % populationSize;
+        choosen.insert(choice);
+    }
+
+    // choose best option among participants
+    int bI, bVal = -1, bEmpty = -1;
+    for(int choice : choosen) {
+        const State & s = population[choice];
+        int sVal = s.value(), sEmpty = s.emptyCount();
+        if(State::betterState(bVal, bEmpty, sVal, sEmpty)) {
+            bI = choice;
+            bVal = sVal;
+            bEmpty = sEmpty;
+        }
+    }
+    return bI;
 }
