@@ -12,10 +12,13 @@
 
 using namespace std;
 
-State breed(const State &s1, const State &s2);
+State breed(const State &s1, const State &s2, BreedingAlgorithm breedingAlg);
+State breedVertically(const State & s1, const State &s2);
+State breedHorizontally(const State & s1, const State &s2);
 State mutate(State & s);
 State bestIndividual(State * population, int populationSize);
 pair<int, int> bestValue(State * population, int populationSize);
+int select(State * population, int populationSize, int np, SelectionAlgorithm selAlg);
 int tournamentSelection(State * population, int populationSize, int np);
 int roulleteSelection(State * population, int populationSize);
 
@@ -27,7 +30,7 @@ void printGenerationProgress(int gen, int total, string msg) {
     cout << "\r[" << gen << "/" << total << "] " << msg << std::flush;
 }
 
-State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generations, double mutationChance, int np) {
+State geneticAlgorithm(InputInfo * globalInfo, SelectionAlgorithm selecAlg, BreedingAlgorithm breedingAlg, int populationSize, int generations, double mutationChance, int np) {
 
     cout << "[+] Starting genetic algorithm" << endl;
 
@@ -43,12 +46,12 @@ State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generatio
         for (int p = 0; p < populationSize; p++) {
             // select parents to breed
             printGenerationProgress(p+1, populationSize, "Selecting parents");
-            const State & p1 = population[roulleteSelection(population, populationSize)];
-            const State & p2 = population[roulleteSelection(population, populationSize)];
+            const State & p1 = population[tournamentSelection(population, populationSize, np)];
+            const State & p2 = population[tournamentSelection(population, populationSize, np)];
 
             // child
             printGenerationProgress(p+1, populationSize, "Breeding parents");
-            newPopulation[p] = breed(p1, p2);
+            newPopulation[p] = breed(p1, p2, breedingAlg);
 
             // mutation
             if(randPercent() <= mutationChance) {
@@ -77,7 +80,19 @@ State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generatio
     return best;
 }
 
-State breed(const State & s1, const State &s2) {
+State breed(const State & s1, const State & s2, BreedingAlgorithm breedingAlg) {
+    switch (breedingAlg)
+    {
+    case BreedingAlgorithm::VerticalDivision:
+        return breedVertically(s1, s2);
+    case BreedingAlgorithm::HorizontalDivision:
+        return breedHorizontally(s1, s2);    
+    default:
+        return breedVertically(s1, s2);
+    }
+}
+
+State breedVertically(const State & s1, const State &s2) {
     int nRows = s1.getGlobalInfo()->rows;
     int division = rand() % nRows;
 
@@ -91,12 +106,41 @@ State breed(const State & s1, const State &s2) {
     for(uint id : s1IDs) {
         const Building & b = s1Buildings.at(id);
         if(b.aboveRow(division)) s1s2.push_back(&b);
-        if(b.belowRow(division)) s2s1.push_back(&b);
+        else if(b.belowRow(division)) s2s1.push_back(&b);
     }
     for(uint id : s2IDs) {
         const Building & b = s2Buildings.at(id);
         if(b.aboveRow(division)) s2s1.push_back(&b);
-        if(b.belowRow(division)) s1s2.push_back(&b);
+        else if(b.belowRow(division)) s1s2.push_back(&b);
+    }
+
+    State option1(s1.getGlobalInfo()), option2(s1.getGlobalInfo());
+    for (const Building * b : s1s2) option1.createBuilding(b->getProject(), b->getRow(), b->getCol());
+    for (const Building * b : s2s1) option2.createBuilding(b->getProject(), b->getRow(), b->getCol());
+
+    return (State::betterState(option1, option2) ? option2 : option1);
+}
+
+State breedHorizontally(const State & s1, const State &s2) {
+    int nCols = s1.getGlobalInfo()->cols;
+    int division = rand() % nCols;
+
+    const unordered_map<uint, Building> & s1Buildings = s1.getBuildings();
+    const unordered_map<uint, Building> & s2Buildings = s2.getBuildings();
+    const vector<uint> & s1IDs = s1.getAllBuildingsIDs();
+    const vector<uint> & s2IDs = s2.getAllBuildingsIDs();
+
+    // s1 on top s2 on bottom, and vice versa
+    vector<const Building*> s1s2, s2s1;
+    for(uint id : s1IDs) {
+        const Building & b = s1Buildings.at(id);
+        if(b.beforeCol(division)) s1s2.push_back(&b);
+        else if(b.afterCol(division)) s2s1.push_back(&b);
+    }
+    for(uint id : s2IDs) {
+        const Building & b = s2Buildings.at(id);
+        if(b.beforeCol(division)) s2s1.push_back(&b);
+        else if(b.afterCol(division)) s1s2.push_back(&b);
     }
 
     State option1(s1.getGlobalInfo()), option2(s1.getGlobalInfo());
@@ -145,6 +189,18 @@ pair<int, int> bestValue(State * population, int populationSize) {
         }
     }
     return make_pair(bVal, bEmpty);
+}
+
+
+int select(State * population, int populationSize, int np, SelectionAlgorithm selAlg) {
+    switch(selAlg) {
+        case SelectionAlgorithm::Roullete:
+            return roulleteSelection(population, populationSize);
+        case SelectionAlgorithm::Tournament:
+            return tournamentSelection(population, populationSize, np);
+        default:
+            return roulleteSelection(population, populationSize);
+    };
 }
 
 int tournamentSelection(State * population, int populationSize, int np) {

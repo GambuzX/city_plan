@@ -63,3 +63,11 @@ bool Building::aboveRow(int separation) const {
 bool Building::belowRow(int separation) const {
     return row > separation;
 }
+
+bool Building::beforeCol(int separation) const {
+    return col + (int) proj->getPlan()[0].size() <= separation;
+}
+
+bool Building::afterCol(int separation) const {
+    return col > separation;
+}
