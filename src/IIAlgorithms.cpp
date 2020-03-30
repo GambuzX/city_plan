@@ -90,6 +90,7 @@ State randomNeighbour(const State & state){
     };
 
     int prevValue = state.value();
+    uint prevEmpty = state.emptyCount(); //used to check if the operators were successful
 
     State newState = state;
 
@@ -97,7 +98,7 @@ State randomNeighbour(const State & state){
         cout << "[+] Applying " << op->getName() << " operator" << endl;
         State newState = op->apply(false);
         int newVal = newState.value();
-        if(prevValue != newVal) {
+        if(prevValue != newVal || prevEmpty != newState.emptyCount()) {
             break;
         }
     }
@@ -110,7 +111,6 @@ State simulatedAnnealing(InputInfo * info, int maxSteps){
     State currentState = generateState(info);
     int currentValue = currentState.value();
     cout << "[+] Starting state: " << currentValue << endl << endl;
-    int stepCount = 0;
 
     for (int s = 1; s <= maxSteps; s++) {
         double temperature = (double)maxSteps / s;
@@ -122,6 +122,7 @@ State simulatedAnnealing(InputInfo * info, int maxSteps){
         double choice = ((double)rand()) / RAND_MAX;   
         double delta = neighbourValue - currentValue;
         double acceptProb = exp(-delta / temperature);
+        cout << "Evaluating neighbour choice = " << choice << ", prob = " << acceptProb << endl;
         if(delta > 0 || choice > acceptProb) {
             currentValue = neighbourValue;
             currentState = neighbour;
