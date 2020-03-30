@@ -12,6 +12,7 @@ using namespace std;
 State breed(const State &s1, const State &s2);
 State mutate(State & s);
 State bestIndividual(State * population, int populationSize);
+pair<int, int> bestValue(State * population, int populationSize);
 
 int randPercent() { return (rand() % 100) + 1; }
 
@@ -27,9 +28,6 @@ State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generatio
     cout << "[+] Generating initial population of size " << populationSize << endl;
     State * population = generatePopulationPtr(globalInfo, populationSize);
     cout << "[!] Initial population generated" << endl << endl;
-
-    for(int i = 0 ; i < populationSize; i++) cout << population[i].value() << " ";
-    cout << endl;
 
     for(int g = 0; g < generations; g++) {
         cout << "[+] Starting generation " << g+1 << "/" << generations << endl;
@@ -50,15 +48,23 @@ State geneticAlgorithm(InputInfo * globalInfo, int populationSize, int generatio
                 mutate(newPopulation[p]);
             }
         }
+        printGenerationProgress(populationSize, populationSize, "Done");
+        cout << endl;
+
+        // update population
         delete[] population;
         population = newPopulation;
-        cout << endl << endl;
+        
+        // select and display the best from this generation
+        pair<int,int> genBest = bestValue(population, populationSize);
+        cout << "[!] Generation " << g+1 << " best individual was: (" <<  genBest.first << ", " << genBest.second << ")" << endl << endl;
     }
 
     // select best from final population
     State best = bestIndividual(population, populationSize);
-    for(int i = 0 ; i < populationSize; i++) cout << population[i].value() << " ";
-    cout << endl;
+    cout << "[!] Genetic algorithm finished" << endl;
+    cout << "[!] Best individual found was: (" <<  best.value() << ", " << best.emptyCount() << ")" << endl << endl;
+
     delete[] population;
     return best;
 }
@@ -118,4 +124,17 @@ State bestIndividual(State * population, int populationSize) {
         }
     }
     return population[bI];
+}
+
+pair<int, int> bestValue(State * population, int populationSize) {
+    int bVal = population[0].value(), bEmpty = population[0].emptyCount();
+    for(int i = 1; i < populationSize; i++) {
+        int nVal = population[i].value();
+        int nEmpty = population[i].emptyCount();
+        if (State::betterState(bVal, bEmpty, nVal, nEmpty)) {
+            bVal = nVal;
+            bEmpty = nVal;
+        }
+    }
+    return make_pair(bVal, bEmpty);
 }
