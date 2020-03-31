@@ -224,7 +224,7 @@ State tabuNeighbour(const State & state){
     return newState;
 }
 
-State tabuSearch(InputInfo * info, int maxTabus){
+State tabuSearch(InputInfo * info, int maxSteps, int maxTemperature, int maxTabus){
     State currentState = generateState(info);
     State bestState = currentState;
 

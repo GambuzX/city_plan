@@ -50,6 +50,14 @@ int main(int argc, char * argv[]) {
 
         State finalState;
 
+        clock_t startTime = clock();
+        finalState = tabuSearch(&globalInfo);
+        clock_t endTime = clock();
+        
+        double elapsedTime = countTime(startTime, endTime);
+
+        printTime("> Tabu", elapsedTime);
+
         switch(option){
             case 1:{ /*HILL CLIMBING*/
                 
