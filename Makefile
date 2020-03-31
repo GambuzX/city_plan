@@ -16,10 +16,10 @@ LDLIBS   := -lm
 all: $(EXE)
 
 $(EXE): $(OBJ)
-	g++ $(LDFLAGS) $^ $(LDLIBS) -o $@
+	g++ $(LDFLAGS) $^ $(LDLIBS) -o $@ -lstdc++fs
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	g++ $(CPPFLAGS) $(CFLAGS) -c $< -o $@ 
+	g++ $(CPPFLAGS) $(CFLAGS) -c $< -o $@ -lstdc++fs
 
 $(OBJ_DIR):
 	mkdir $@
