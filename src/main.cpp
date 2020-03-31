@@ -60,13 +60,9 @@ int main(int argc, char * argv[]) {
             }
             case 2:{ /*SIMULATED ANNEALING*/
                 
-                cout << endl << " How many steps would you like to do?" << endl;
-                int maxSteps;
-                cin >> maxSteps;
+                int maxSteps = chooseMaxSteps();
 
-                cout << endl << " What should be the starting \"temperature\"?" << endl;
-                double temperature;
-                cin >> temperature;
+                double temperature = chooseMaxTemperature();
 
                 finalState = simulatedAnnealing(&globalInfo, maxSteps, temperature);
                 break;

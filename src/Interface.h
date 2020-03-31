@@ -14,9 +14,10 @@ std::string chooseInputFileName();
 std::string chooseOutputFileName();
 bool fileExists(std::string fileName);
 
-/*Hill Climbing Parameters*/
+/*Hill Climbing & Simulated Annealing Parameters*/
 bool chooseBestNeighbour();
 int chooseMaxSteps();
+double chooseMaxTemperature();
 
 /*Genetic Algortihms Parameters*/
 SelectionAlgorithm chooseSelectionAlgorithm();

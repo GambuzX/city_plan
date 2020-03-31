@@ -41,6 +41,26 @@ int getIntOption(string display_string = " Option", string invalid_string = "Opt
     return option;
 }
 
+double getDoubleOption(string display_string, string invalid_string){
+    double option;
+    bool cinFailed;
+    do
+    {
+        cout << display_string << ": ";
+        cin >> option;
+        cinFailed = cin.fail();
+        if (cinFailed)
+        {
+            cin.clear();
+            cin.ignore(100000, '\n');
+            cout << endl << " Invalid " << invalid_string << "!";
+        }
+        cout << endl << endl;
+    } while (cinFailed);
+
+    return option;
+}
+
 int menu(){
     cout << endl << " MAIN MENU" << endl;
     int option = -1;
@@ -141,6 +161,17 @@ int chooseMaxSteps(){
     return maxSteps;
 }
 
+double chooseMaxTemperature(){
+    double temperature = getDoubleOption(" Choose the starting \"temperature\" (> 0)", "Temperature (Must be a double)");
+
+    if(temperature <= 0){
+        cout << " Invalid Temperature! A temperature of 10 will be used..." << endl << endl;
+        return 10;
+    }
+
+    return temperature;
+}
+
 SelectionAlgorithm chooseSelectionAlgorithm(){
     cout << endl << " Choose the selection algorithm: " << endl;
     cout << " \t1: Tournament;" << endl;
@@ -205,21 +236,7 @@ int chooseGenerations(){
 }
 
 double chooseMutationChance(){
-    double mutationChance;
-    bool cinFailed;
-    do
-    {
-        cout <<" Choose Mutation Chance [0-100]: ";
-        cin >> mutationChance;
-        cinFailed = cin.fail();
-        if (cinFailed)
-        {
-            cin.clear();
-            cin.ignore(100000, '\n');
-            cout << endl << " Invalid Mutation Chance (Must be a double)!";
-        }
-        cout << endl << endl;
-    } while (cinFailed);
+    double mutationChance = getDoubleOption(" Choose Mutation Chance [0-100]", "Mutation Chance (Must be a double)");
 
     if(mutationChance <= 0 || mutationChance > 100){
         cout << " Invalid Mutation Chance! A chance of 5% will be used..." << endl << endl;
