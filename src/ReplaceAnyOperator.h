@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <unordered_map>
-#include <random>
 #include "Operator.h"
+#include "Util.h"
 
 class ReplaceAnyOperator : public Operator {
     public:
@@ -19,7 +19,7 @@ class ReplaceAnyOperator : public Operator {
             std::vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
 
 
-            size_t randomBuildingIndex = rand() % buildingsIDs.size(); //Starting point for the building list iteration
+            size_t randomBuildingIndex = getRandomValue() % buildingsIDs.size(); //Starting point for the building list iteration
 
             // remove building first
             for (unsigned int b = 0; b < buildingsIDs.size(); ++b) {
@@ -33,7 +33,7 @@ class ReplaceAnyOperator : public Operator {
                 int row = removed.getRow(), col = removed.getCol();
                 updateUsedMap(map, removed.getProject(), row, col, false);
 
-                size_t randomProjectIndex = rand() % projects.size();
+                size_t randomProjectIndex = getRandomValue() % projects.size();
                 std::cout << "[*] Attempting to replace one out of " << projects.size() << " candidates (index = " << randomProjectIndex << ")" << std::endl;
 
                 // replace building project

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <random>
 #include "Operator.h"
+#include "Util.h"
 
 class RemoveRandomOperator : public Operator {
     public:
@@ -14,7 +14,7 @@ class RemoveRandomOperator : public Operator {
             if(initialState.getBuildings().size() == 0) return initialState;
             
             std::vector<uint> allIDs = initialState.getAllBuildingsIDs();
-            uint toRemove = rand() % allIDs.size();
+            uint toRemove = getRandomValue() % allIDs.size();
             std::cout << "[*] Removed  " << toRemove << std::endl;
             State state = initialState;
             state.removeBuilding(allIDs[toRemove]);

@@ -121,11 +121,11 @@ State simulatedAnnealing(InputInfo * info, int maxSteps){
         State neighbour = randomNeighbour(currentState);
         int neighbourValue = neighbour.value();
         
-        double choice = ((double)rand()) / RAND_MAX;   
+        double choice = ((double)getRandomValue()) / RAND_MAX;   
         double delta = neighbourValue - currentValue;
-        double acceptProb = exp(-delta / temperature);
+        double acceptProb = exp(delta / temperature);
         cout << "Evaluating neighbour choice = " << choice << ", prob = " << acceptProb << endl;
-        if(delta > 0 || choice > acceptProb) {
+        if(delta > 0 || choice >= acceptProb) {
             currentValue = neighbourValue;
             currentState = neighbour;
             cout << "[+] Found neighbour: " << currentValue << endl << endl;

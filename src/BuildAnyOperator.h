@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <random>
 #include "Operator.h"
+#include "Util.h"
 
 // build the first building that encounters
 class BuildAnyOperator : public Operator {
@@ -26,7 +27,7 @@ class BuildAnyOperator : public Operator {
                         continue;
 
                     
-                    size_t randomProjectIndex = rand() % projects.size();//Starting point for the project list iteration
+                    size_t randomProjectIndex = getRandomValue() % projects.size();//Starting point for the project list iteration
                     std::cout << "[*] Found an empty cell, attempting to build one out of " << projects.size() << " candidates (starting index = " << randomProjectIndex << ")" << std::endl;
                     
                     // try to build all projects
