@@ -1,10 +1,11 @@
 #pragma once
 
 #include <string>
+#include <time.h>
 
 #include "Genetic.h"
 
-#define NUM_MAX_OPTIONS 4
+#define NUM_MAX_OPTIONS 5
 
 void drawLogo();
 int menu();
@@ -26,3 +27,10 @@ int choosePopulationSize();
 int chooseGenerations();
 double chooseMutationChance();
 int chooseNP(const int &populationSize);
+
+/*Performance*/
+double countTime(clock_t startTime, clock_t endTime);
+void printTime(std::string algorithm, double elapsedTime);
+void printTime(std::pair<State, double> hcInfo, 
+               std::pair<State, double> saInfo, 
+               std::pair<State, double> gaInfo);

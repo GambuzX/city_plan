@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <time.h>
 
 #include "State.h"
 #include "InputParse.h"
@@ -55,7 +56,14 @@ int main(int argc, char * argv[]) {
                 bool findBestNeighbour = chooseBestNeighbour();
                 int maxSteps = chooseMaxSteps();
 
+                clock_t startTime = clock(); 
                 finalState = hillClimbing(&globalInfo, maxSteps, findBestNeighbour);
+                clock_t endTime = clock();
+                
+                double elapsedTime = countTime(startTime, endTime);
+
+                printTime(" Hill Climbing", elapsedTime);
+
                 break;
             }
             case 2:{ /*SIMULATED ANNEALING*/
@@ -64,7 +72,13 @@ int main(int argc, char * argv[]) {
 
                 double temperature = chooseMaxTemperature();
 
+                clock_t startTime = clock();
                 finalState = simulatedAnnealing(&globalInfo, maxSteps, temperature);
+                clock_t endTime = clock();
+                
+                double elapsedTime = countTime(startTime, endTime);
+
+                printTime(" Simulated Annealing", elapsedTime);
                 break;
             }
             case 3:{ /*GENETIC ALGORITHM*/
@@ -80,6 +94,7 @@ int main(int argc, char * argv[]) {
                     np = chooseNP(populationSize);
                 }
 
+                clock_t startTime = clock();
                 finalState = geneticAlgorithm(
                     &globalInfo,
                     selectionAlgorithm, 
@@ -89,8 +104,33 @@ int main(int argc, char * argv[]) {
                     mutationChance, 
                     np
                 );
+                clock_t endTime = clock();
+                
+                double elapsedTime = countTime(startTime, endTime);
 
+                printTime(" Genetic Algorithm", elapsedTime);
                 break;
+            }
+            case 4:{
+                clock_t hillClimbingStartTime = clock();
+                State hillClimbingState = hillClimbing(&globalInfo);
+                clock_t hillClimbingEndTime = clock();
+                double hillClimbingElapsedTime = countTime(hillClimbingStartTime, hillClimbingEndTime);
+
+                clock_t simulatedAnnealingStartTime = clock();
+                State simulatedAnnealingState = simulatedAnnealing(&globalInfo);
+                clock_t simulatedAnnealingEndTime = clock();
+                double simulatedAnnealingElapsedTime = countTime(simulatedAnnealingStartTime, simulatedAnnealingEndTime);
+
+                clock_t geneticAlgorithmStartTime = clock();
+                State geneticAlgorithmState = geneticAlgorithm(&globalInfo); 
+                clock_t geneticAlgorithmEndTime = clock();
+                double geneticAlgorithmElapsedTime = countTime(geneticAlgorithmStartTime, geneticAlgorithmEndTime);
+
+                printTime(make_pair(hillClimbingState, hillClimbingElapsedTime), 
+                          make_pair(simulatedAnnealingState, simulatedAnnealingElapsedTime), 
+                          make_pair(geneticAlgorithmState, geneticAlgorithmElapsedTime));
+                continue;
             }
             default:{
                 return 0;

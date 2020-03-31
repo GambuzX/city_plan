@@ -1,6 +1,7 @@
 #include "Interface.h"
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <experimental/filesystem>
 
@@ -69,8 +70,9 @@ int menu(){
         cout << " Choose an algorithm: " << endl;
         cout << " \t1: Hill Climbing;" << endl;
         cout << " \t2: Simulated Annealing;" << endl;
-        cout << " \t3: Genetic Algorithm." << endl;
-        cout << " \t4: Exit program." << endl <<  endl;
+        cout << " \t3: Genetic Algorithm;" << endl;
+        cout << " \t4: Run all with default values;" << endl;
+        cout << " \t5: Exit program." << endl <<  endl;
         
         option = getIntOption();
         
@@ -260,4 +262,41 @@ int chooseNP(const int &populationSize){
     }
 
     return np;
+}
+
+double countTime(clock_t startTime, clock_t endTime){
+    return (double)(endTime-startTime)/(CLOCKS_PER_SEC / 1000.0);
+}
+
+void printTime(std::string algorithm, double elapsedTime){
+    cout << endl << algorithm << " took " << ((int)(elapsedTime*100))/100.0 << "ms" << endl << endl;
+}
+
+template <class T>
+void printField(int num, T field){
+    cout << setw(num) << left << field;
+}
+
+void printTime(std::pair<State, double> hcInfo, std::pair<State, double> saInfo, 
+               std::pair<State, double> gaInfo){
+    cout << endl;
+    cout << "             | Hill Climbing | Simulated Annealing | Genetic Algorithm" << endl;
+    cout << "-------------|---------------|---------------------|-------------------" << endl;
+    cout << " Value       | "; 
+    printField(13, hcInfo.first.value());
+    cout << " | ";
+    printField(19, saInfo.first.value());
+    cout << " | " << gaInfo.first.value() << endl;
+    cout << "-------------|---------------|---------------------|-------------------" << endl;
+    cout << " Empty Cells | ";
+    printField(13, hcInfo.first.emptyCount());
+    cout << " | ";
+    printField(19, saInfo.first.emptyCount());
+    cout << " | " << gaInfo.first.emptyCount() << endl;
+    cout << "-------------|---------------|---------------------|-------------------" << endl;
+    cout << " Time        | "; 
+    printField(13, hcInfo.second); 
+    cout <<  " | ";
+    printField(19, saInfo.second);
+    cout << " | " << gaInfo.second << endl << endl;
 }
