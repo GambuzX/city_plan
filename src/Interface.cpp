@@ -103,6 +103,44 @@ string chooseOutputFileName(){
     return chooseFileName("OUTPUT");
 }
 
+bool chooseBestNeighbour(){
+    cout << endl << " Do you want to find the best neighbour?" << endl;
+        
+    char bestNeighbourOption;
+
+    cout << " [Y/N] (default is N): ";
+    cin >> bestNeighbourOption;
+    
+    cin.clear();
+    cin.ignore(100000, '\n');
+
+    if (cin.fail())
+    {
+        cout << endl << " Invalid option!";
+        cout << endl;
+        return false;
+    }
+    
+
+    if(toupper(bestNeighbourOption) == 'Y'){
+        cout << endl;
+        return true;
+    }
+    cout << " The algorithm won't find the best neighbour..." << endl << endl;
+    return false;
+}
+
+int chooseMaxSteps(){
+    int maxSteps = getIntOption(" Choose Maximum Number of Steps (> 0)", "Maximum Number of Steps (Must be an int)");
+
+    if(maxSteps <= 0){
+        cout << " Invalid number! The maximum number of steps will be 100..." << endl << endl;
+        return 10;
+    }
+
+    return maxSteps;
+}
+
 SelectionAlgorithm chooseSelectionAlgorithm(){
     cout << endl << " Choose the selection algorithm: " << endl;
     cout << " \t1: Tournament;" << endl;

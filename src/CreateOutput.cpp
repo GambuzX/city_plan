@@ -16,7 +16,7 @@ void createOutput(const State &finalState, string outputFileName){
     else{
         cout << "[!] OUTPUT FILE NAME: " << outputFileName << endl;
     }
-    cin.ignore();
+    
     ofstream f;
     do{
         f.open(outputFileName);

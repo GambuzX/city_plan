@@ -52,18 +52,10 @@ int main(int argc, char * argv[]) {
         switch(option){
             case 1:{ /*HILL CLIMBING*/
                 
-                cout << endl << " Do you want to find the best neighbour?" << endl;
-                cout << " [Y/N] (default is N): ";
-                bool findBestNeighbour = false;
-                char bestNeighbourOption;
-                cin >> bestNeighbourOption;
-                cout << endl;
-                
-                if(toupper(bestNeighbourOption) == 'Y'){
-                    findBestNeighbour = true;
-                }
+                bool findBestNeighbour = chooseBestNeighbour();
+                int maxSteps = chooseMaxSteps();
 
-                finalState = hillClimbing(&globalInfo, findBestNeighbour);
+                finalState = hillClimbing(&globalInfo, maxSteps, findBestNeighbour);
                 break;
             }
             case 2:{ /*SIMULATED ANNEALING*/
