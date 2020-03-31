@@ -135,7 +135,7 @@ int chooseMaxSteps(){
 
     if(maxSteps <= 0){
         cout << " Invalid number! The maximum number of steps will be 100..." << endl << endl;
-        return 10;
+        return 100;
     }
 
     return maxSteps;
