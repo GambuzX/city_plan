@@ -24,6 +24,7 @@ class BuildRandomPositionOperator : public Operator {
             const std::vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
             bMatrix map = initialState.getFilledPositions();
             State state = initialState;
+            int initialValue = state.value();
             size_t maxRow = map.size(), maxCol = map[0].size();
             std::set<std::string> seen;
             int rRow, rCol;
@@ -43,12 +44,21 @@ class BuildRandomPositionOperator : public Operator {
                 // try to build all projects, starting in a random one
                 size_t randomOffset = getRandomValue() % projects.size();               
                 for(size_t p = 0; p < projects.size(); p++) {
-                    size_t projectIndex = (p + randomOffset) % projects.size(); 
-
+                    size_t projectIndex = (p + randomOffset) % projects.size();
                     Project * currProject = (Project *) &projects[projectIndex];
-                    if(state.canCreateBuilding(currProject, rRow, rCol, &map)){                
-                        state.createBuilding(currProject, rRow, rCol, true);
-                        return state;
+
+                    if(state.canCreateBuilding(currProject, rRow, rCol, &map)){
+                        uint newBuildingID = state.createBuilding(currProject, rRow, rCol, false); // do not update map limits in this step
+                        int newStateValue = state.value();   
+
+                        // only return if better state
+                        if(State::betterState(initialValue, initialState.emptyCount(), newStateValue, state.emptyCount())) {
+                            state.updateMapLimitsCreate(currProject, rRow, rCol);
+                            return state;
+                        }
+
+                        // remove building to maintain state
+                        state.removeBuilding(newBuildingID, false);
                     } 
                 }
             }
