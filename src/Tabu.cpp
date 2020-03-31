@@ -12,6 +12,11 @@ void Tabu::setProjectRestriction(int projectID){
     this->restrictsProject = true;
 }
 
+void Tabu::setBuildingRestriction(int buildingID){
+    this->buildingID = buildingID;
+    this->restrictsBuilding = true;
+}
+
 void Tabu::setOperationRestriction(OperationType operation){
     this->operation = operation;
     this->restrictsOperation = true;
@@ -34,6 +39,14 @@ bool Tabu::restrictedProject(int projectID){
     return false;
 }
 
+bool Tabu::restrictedBuilding(int buildingID){
+    if(!restrictsBuilding) return false;
+
+    if(this->buildingID == buildingID) return true;
+
+    return false;
+}
+
 bool Tabu::restrictedOperation(OperationType operation){
     if(!restrictsOperation) return false;
 
@@ -42,6 +55,6 @@ bool Tabu::restrictedOperation(OperationType operation){
     return false;
 }
 
-bool Tabu::restrictedAction(int row, int col, int projectID, OperationType OperationType){
-    return restrictedOperation(operation) || restrictedPosition(row,col) || restrictedProject(projectID);
+bool Tabu::restrictedAction(int row, int col, int id, OperationType OperationType){
+    return restrictedOperation(operation) || restrictedPosition(row,col) || restrictedProject(id) || restrictedBuilding(id);
 }

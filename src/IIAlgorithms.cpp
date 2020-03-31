@@ -10,10 +10,13 @@
 #include "BuildOperator.h"
 #include "BuildRandomOperator.h"
 #include "BuildRandomPositionOperator.h"
+#include "BuildTabuOperator.h"
 #include "RemoveRandomOperator.h"
+#include "RemoveTabuOperator.h"
 #include "RemoveOperator.h"
 #include "ReplaceOperator.h"
 #include "ReplaceRandomOperator.h"
+#include "ReplaceTabuOperator.h"
 
 using namespace std;
 
@@ -190,20 +193,59 @@ State simulatedAnnealing(InputInfo * info, int maxSteps, double maxTemperature){
     return bestState;
 }
 
-State tabuSearch(InputInfo * info){
+State tabuNeighbour(const State & state){
+    // operators to apply, in sequence
+    vector<Operator*> operators{
+        new BuildTabuOperator(state),
+        new ReplaceTabuOperator(state),
+        new RemoveTabuOperator(state)
+    };
+
+    int prevValue = state.value();
+    uint prevEmpty = state.emptyCount(); //used to check if the operators were successful
+
+    State newState = state;
+
+    size_t randomOffset = getRandomValue() % operators.size();//Starting point for the operator list iteration
+
+    for (uint i = 0; i < operators.size(); ++i) {
+        size_t operatorIndex = (randomOffset +  i) % operators.size();
+        Operator *op = operators[operatorIndex];
+        cout << "[+] Applying " << op->getName() << " operator" << endl;
+        newState = op->apply(false);
+        int newVal = newState.value();
+        if(prevValue != newVal || prevEmpty != newState.emptyCount()) {
+            break;
+        }
+    }
+
+    for(size_t i = 0; i < operators.size(); i++) delete operators[i];
+
+    return newState;
+}
+
+State tabuSearch(InputInfo * info, int maxTabus){
     State currentState = generateState(info);
     State bestState = currentState;
-/*
+
+    TabuOperator::setMaxTabus(maxTabus);
+
     int currentValue = currentState.value();
     int bestValue = currentValue;
+    int currentEmpty = currentState.emptyCount();
     cout << "[+] Starting state: " << currentValue << endl << endl;
 
     for (int s = 1; s < maxSteps; s++) {
         double temperature = maxTemperature * ((double)s / maxSteps);
 
         cout << "[+] Searching for neighbour" << endl;
-        State neighbour = randomNeighbour(currentState);
+        State neighbour = tabuNeighbour(currentState);
         int neighbourValue = neighbour.value();
+        int neighbourEmpty = neighbour.emptyCount();
+
+        if(currentValue != neighbourValue || currentEmpty != neighbourEmpty) {
+            break;
+        }
         
         double choice = ((double)getRandomValue()) / RAND_MAX;   
         double delta = neighbourValue - currentValue;
@@ -220,7 +262,9 @@ State tabuSearch(InputInfo * info){
             bestValue = currentValue;
         }
     }
+
+    TabuOperator::clearTabus();
     
-    cout << "Ended search with a value of " << bestValue << endl;*/
+    cout << "Ended search with a value of " << bestValue << endl;
     return bestState;
 }

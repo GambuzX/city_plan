@@ -10,11 +10,13 @@ typedef enum {
 class Tabu {
     private:
         int projectID = -1;
+        int buildingID = -1;
         int row = -1;
         int col = -1;
         OperationType operation = NONE;
 
         bool restrictsProject = false;
+        bool restrictsBuilding = false;
         bool restrictsPosition = false;
         bool restrictsOperation = false;
 
@@ -22,11 +24,13 @@ class Tabu {
         Tabu();
         void setPositionRestriction(int row, int col);
         void setProjectRestriction(int projectID);
+        void setBuildingRestriction(int buildingID);
         void setOperationRestriction(OperationType operation);
 
         bool restrictedPosition(int row, int col);
         bool restrictedProject(int projectID);
+        bool restrictedBuilding(int buildingID);
         bool restrictedOperation(OperationType operation);
 
-        bool restrictedAction(int row, int col, int projectID, OperationType OperationType);
+        bool restrictedAction(int row, int col, int id, OperationType OperationType);
 };
