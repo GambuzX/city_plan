@@ -84,14 +84,14 @@ State geneticAlgorithm(InputInfo * globalInfo, SelectionAlgorithm selecAlg, Bree
 State breed(const State & s1, const State & s2, BreedingAlgorithm breedingAlg) {
     switch (breedingAlg)
     {
-    case BreedingAlgorithm::VerticalDivision:
-        return breedVertically(s1, s2);
-    case BreedingAlgorithm::HorizontalDivision:
-        return breedHorizontally(s1, s2);
-    case BreedingAlgorithm::SelectionInTurns:
-        return breedInTurns(s1, s2);
-    default:
-        return breedVertically(s1, s2);
+        case BreedingAlgorithm::VerticalDivision:
+            return breedVertically(s1, s2);
+        case BreedingAlgorithm::HorizontalDivision:
+            return breedHorizontally(s1, s2);
+        case BreedingAlgorithm::SelectionInTurns:
+            return breedInTurns(s1, s2);
+        default:
+            return breedVertically(s1, s2);
     }
 }
 
