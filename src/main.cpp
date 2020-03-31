@@ -52,15 +52,17 @@ int main(int argc, char * argv[]) {
 
         switch(option){
             case 1:{ /*HILL CLIMBING*/
+                
                 int maxSteps = chooseMaxSteps();
+                OperatorsAccuracy accuracy = chooseOperatorsAccuracy();
 
                 clock_t startTime = clock(); 
-                finalState = hillClimbing(&globalInfo, maxSteps);
+                finalState = hillClimbing(&globalInfo, maxSteps, accuracy);
                 clock_t endTime = clock();
                 
                 double elapsedTime = countTime(startTime, endTime);
 
-                printTime(" Hill Climbing", elapsedTime);
+                printTime("> Hill Climbing", elapsedTime);
 
                 break;
             }
@@ -76,7 +78,7 @@ int main(int argc, char * argv[]) {
                 
                 double elapsedTime = countTime(startTime, endTime);
 
-                printTime(" Simulated Annealing", elapsedTime);
+                printTime("> Simulated Annealing", elapsedTime);
                 break;
             }
             case 3:{ /*GENETIC ALGORITHM*/
@@ -106,7 +108,7 @@ int main(int argc, char * argv[]) {
                 
                 double elapsedTime = countTime(startTime, endTime);
 
-                printTime(" Genetic Algorithm", elapsedTime);
+                printTime("> Genetic Algorithm", elapsedTime);
                 break;
             }
             case 4:{
