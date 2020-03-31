@@ -1,6 +1,8 @@
 #include "Interface.h"
 
 #include <iostream>
+#include <sstream>
+#include <experimental/filesystem>
 
 using namespace std;
 
@@ -19,6 +21,26 @@ void drawLogo(){
     cout << " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 }
 
+int getIntOption(string display_string = " Option", string invalid_string = "Option"){
+    int option;
+    bool cinFailed;
+    do
+    {
+        cout << display_string << ": ";
+        cin >> option;
+        cinFailed = cin.fail();
+        if (cinFailed)
+        {
+            cin.clear();
+            cin.ignore(100000, '\n');
+            cout << endl << " Invalid " << invalid_string << "!";
+        }
+        cout << endl << endl;
+    } while (cinFailed);
+
+    return option;
+}
+
 int menu(){
     cout << endl << " MAIN MENU" << endl;
     int option = -1;
@@ -30,9 +52,7 @@ int menu(){
         cout << " \t3: Genetic Algorithm." << endl;
         cout << " \t4: Exit program." << endl <<  endl;
         
-        cout << " Option: ";
-        cin >> option;
-        cout << endl << endl;
+        option = getIntOption();
         
         if(option > NUM_MAX_OPTIONS || option < 1){
             cout << " Invalid option!" << endl << endl;    
@@ -43,12 +63,35 @@ int menu(){
     return option;
 }
 
-string chooseFileName(string oper){
-    cout << " CHOOSE " << oper << " OPTION: ";
+bool fileExists(string fileName){
+    if(experimental::filesystem::exists(fileName)){
+        if(experimental::filesystem::is_regular_file(fileName)){
+            return true;
+        }
+    }
 
-    string fileName;
-    cin >> fileName;
+    return false;
+}
+
+string chooseFileName(string oper){
+    cout << " CHOOSE " << oper << " FILE NAME: ";
     
+    string fileName;
+    bool file_exists = false;
+    if(oper =="OUTPUT")
+        fileName = true;
+    
+    do{
+        cin >> fileName;
+        
+        if(oper == "INPUT")
+            file_exists = fileExists(fileName);
+        
+        if(!file_exists){    
+            cout << " File doesn't exist!" << endl << endl;
+            cout << " CHOOSE " << oper << " FILE NAME: ";
+        }
+    }while(!file_exists);
     return fileName;
 }
 
@@ -60,16 +103,50 @@ string chooseOutputFileName(){
     return chooseFileName("OUTPUT");
 }
 
+bool chooseBestNeighbour(){
+    cout << endl << " Do you want to find the best neighbour?" << endl;
+        
+    char bestNeighbourOption;
+
+    cout << " [Y/N] (default is N): ";
+    cin >> bestNeighbourOption;
+    
+    cin.clear();
+    cin.ignore(100000, '\n');
+
+    if (cin.fail())
+    {
+        cout << endl << " Invalid option!";
+        cout << endl;
+        return false;
+    }
+    
+
+    if(toupper(bestNeighbourOption) == 'Y'){
+        cout << endl;
+        return true;
+    }
+    cout << " The algorithm won't find the best neighbour..." << endl << endl;
+    return false;
+}
+
+int chooseMaxSteps(){
+    int maxSteps = getIntOption(" Choose Maximum Number of Steps (> 0)", "Maximum Number of Steps (Must be an int)");
+
+    if(maxSteps <= 0){
+        cout << " Invalid number! The maximum number of steps will be 100..." << endl << endl;
+        return 10;
+    }
+
+    return maxSteps;
+}
+
 SelectionAlgorithm chooseSelectionAlgorithm(){
     cout << endl << " Choose the selection algorithm: " << endl;
     cout << " \t1: Tournament;" << endl;
     cout << " \t2: Roullete." << endl << endl;
     
-    cout << " Option: ";
-    int option;
-
-    cin >> option;
-    cout << endl;
+    int option = getIntOption();
 
     switch(option){
         case 1:
@@ -89,11 +166,7 @@ BreedingAlgorithm chooseBreedingAlgorithm(){
     cout << " \t2: Vertical Division;" << endl;
     cout << " \t3: Selection In Turns." << endl << endl;
 
-    cout << " Option: ";
-    int option;
-
-    cin >> option;
-    cout << endl;
+    int option = getIntOption();
 
     switch(option){
         case 1:
@@ -110,11 +183,7 @@ BreedingAlgorithm chooseBreedingAlgorithm(){
 }
 
 int choosePopulationSize(){
-    int populationSize;
-
-    cout << " Choose Population Size (> 0): ";
-    cin >> populationSize;
-    cout << endl;
+    int populationSize = getIntOption(" Choose Population Size (> 0)", "Population Size (Must be an int)");
 
     if(populationSize <= 0){
         cout << " Invalid size! Initial population with 100 states will be used..." << endl << endl;
@@ -125,11 +194,8 @@ int choosePopulationSize(){
 }
 
 int chooseGenerations(){
-    int numGenerations;
+    int numGenerations = getIntOption(" Choose Number of Generations (> 0)", "Number of Generations (Must be an int)");
 
-    cout << " Choose Number of Generations (> 0): ";
-    cin >> numGenerations;
-    cout << endl;
     if(numGenerations <= 0){
         cout << " Invalid number! 10 generations will be used..." << endl << endl;
         return 10;
@@ -140,12 +206,23 @@ int chooseGenerations(){
 
 double chooseMutationChance(){
     double mutationChance;
+    bool cinFailed;
+    do
+    {
+        cout <<" Choose Mutation Chance [0-100]: ";
+        cin >> mutationChance;
+        cinFailed = cin.fail();
+        if (cinFailed)
+        {
+            cin.clear();
+            cin.ignore(100000, '\n');
+            cout << endl << " Invalid Mutation Chance (Must be a double)!";
+        }
+        cout << endl << endl;
+    } while (cinFailed);
 
-    cout << " Choose Mutation Chance [0-100]: ";
-    cin >> mutationChance;
-    cout << endl;
     if(mutationChance <= 0 || mutationChance > 100){
-        cout << " Invalid mutation chance! A chance of 5% will be used..." << endl << endl;
+        cout << " Invalid Mutation Chance! A chance of 5% will be used..." << endl << endl;
         return 5;
     }
 
@@ -153,11 +230,10 @@ double chooseMutationChance(){
 }
 
 int chooseNP(const int &populationSize){
-    int np;
+    ostringstream oss;
+    oss << " Choose NP value [0-" << populationSize << "]";
+    int np = getIntOption(oss.str(), "NP (Must be an int)");
 
-    cout << " Choose NP value [0-" << populationSize << "]: ";
-    cin >> np;
-    cout << endl;
     if(np <= 0){
         cout << " Invalid np! NP equals to 3 will be used..." << endl << endl;
         return 3;

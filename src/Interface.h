@@ -12,6 +12,11 @@ int menu();
 /*File Names*/
 std::string chooseInputFileName();
 std::string chooseOutputFileName();
+bool fileExists(std::string fileName);
+
+/*Hill Climbing Parameters*/
+bool chooseBestNeighbour();
+int chooseMaxSteps();
 
 /*Genetic Algortihms Parameters*/
 SelectionAlgorithm chooseSelectionAlgorithm();
