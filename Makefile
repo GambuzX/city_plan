@@ -19,7 +19,7 @@ $(EXE): $(OBJ)
 	g++ $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	g++ $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	g++ $(CPPFLAGS) $(CFLAGS) -c $< -o $@ 
 
 $(OBJ_DIR):
 	mkdir $@

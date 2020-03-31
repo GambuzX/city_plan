@@ -15,6 +15,7 @@ using namespace std;
 State breed(const State &s1, const State &s2, BreedingAlgorithm breedingAlg);
 State breedVertically(const State & s1, const State &s2);
 State breedHorizontally(const State & s1, const State &s2);
+State breedInTurns(const State &s1, const State &s2);
 State mutate(State & s);
 State bestIndividual(State * population, int populationSize);
 pair<int, int> bestValue(State * population, int populationSize);
@@ -46,8 +47,8 @@ State geneticAlgorithm(InputInfo * globalInfo, SelectionAlgorithm selecAlg, Bree
         for (int p = 0; p < populationSize; p++) {
             // select parents to breed
             printGenerationProgress(p+1, populationSize, "Selecting parents");
-            const State & p1 = population[tournamentSelection(population, populationSize, np)];
-            const State & p2 = population[tournamentSelection(population, populationSize, np)];
+            const State & p1 = population[select(population, populationSize, np, selecAlg)];
+            const State & p2 = population[select(population, populationSize, np, selecAlg)];
 
             // child
             printGenerationProgress(p+1, populationSize, "Breeding parents");
@@ -86,7 +87,9 @@ State breed(const State & s1, const State & s2, BreedingAlgorithm breedingAlg) {
     case BreedingAlgorithm::VerticalDivision:
         return breedVertically(s1, s2);
     case BreedingAlgorithm::HorizontalDivision:
-        return breedHorizontally(s1, s2);    
+        return breedHorizontally(s1, s2);
+    case BreedingAlgorithm::SelectionInTurns:
+        return breedInTurns(s1, s2);
     default:
         return breedVertically(s1, s2);
     }
@@ -148,6 +151,42 @@ State breedHorizontally(const State & s1, const State &s2) {
     for (const Building * b : s2s1) option2.createBuilding(b->getProject(), b->getRow(), b->getCol());
 
     return (State::betterState(option1, option2) ? option2 : option1);
+}
+
+State breedInTurns(const State &s1, const State &s2) {
+    
+    const unordered_map<uint, Building> &s1Buildings = s1.getBuildings();
+    const unordered_map<uint, Building> &s2Buildings = s2.getBuildings();
+    vector<vector<uint>> s1Map = s1.getCityMap();
+    vector<vector<uint>> s2Map = s2.getCityMap();
+    bMatrix filledPos;
+    State newState(s1.getGlobalInfo());
+    bool s1Turn = true;
+
+    for(size_t row = 0; row < s1Map.size(); row++) {
+        for (size_t col = 0; col < s2Map.size(); col++) {
+            if(s1Turn && s1Map[row][col] != 0) {
+                const Building & b = s1Buildings.at(s1Map[row][col]);
+                if(!newState.canCreateBuilding(b.getProject(), b.getRow(), b.getCol(), &filledPos)) continue;
+                
+                // can create building
+                newState.createBuilding(b.getProject(), b.getRow(), b.getCol());
+                updateUsedMap(filledPos, b.getProject(), b.getRow(), b.getCol(), true);
+                s1Turn = false;
+            }
+            else if(!s1Turn && s2Map[row][col] != 0) {
+                const Building & b = s2Buildings.at(s2Map[row][col]);
+                if(!newState.canCreateBuilding(b.getProject(), b.getRow(), b.getCol(), &filledPos)) continue;
+                
+                // can create building
+                newState.createBuilding(b.getProject(), b.getRow(), b.getCol());
+                updateUsedMap(filledPos, b.getProject(), b.getRow(), b.getCol(), true);
+                s1Turn = true;
+            }
+        }
+    }
+    
+    return newState;
 }
 
 State mutate(State & s) {

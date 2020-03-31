@@ -9,7 +9,8 @@ enum SelectionAlgorithm {
 
 enum BreedingAlgorithm {
     HorizontalDivision,
-    VerticalDivision
+    VerticalDivision,
+    SelectionInTurns
 };
 
 State geneticAlgorithm(InputInfo * globalInfo, 
