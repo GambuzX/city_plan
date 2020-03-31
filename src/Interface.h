@@ -12,6 +12,7 @@ int menu();
 /*File Names*/
 std::string chooseInputFileName();
 std::string chooseOutputFileName();
+bool fileExists(std::string fileName);
 
 /*Genetic Algortihms Parameters*/
 SelectionAlgorithm chooseSelectionAlgorithm();

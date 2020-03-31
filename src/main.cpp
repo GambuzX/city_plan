@@ -20,6 +20,10 @@ int main(int argc, char * argv[]) {
         cout << "       city_plan [input_file] [output_file]" << endl;
         return -1;
     }
+    if(argc > 1 && !fileExists(argv[1])){
+        cout << "ERROR: Input file doesn't exist." << endl;
+        return -1;
+    }
 
     srand(time(NULL));
     

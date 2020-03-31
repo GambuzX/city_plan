@@ -21,7 +21,7 @@ void createOutput(const State &finalState, string outputFileName){
     do{
         f.open(outputFileName);
         if(f.fail()){
-            cout << "[?] ERROR: CAN'T OPEN FILE. MAKE SURE THE DIRECTORY 'outputs/' EXISTS." << endl;
+            cout << "[?] ERROR: CAN'T OPEN FILE. MAKE SURE THE SPECIFIED DIRECTORY EXISTS." << endl;
             cout << "[?] PLEASE PRESS ANY KEY WHEN YOU CREATE THE DIRECTORY." << endl;
             cin.ignore();
         }
