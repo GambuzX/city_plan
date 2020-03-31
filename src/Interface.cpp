@@ -155,7 +155,7 @@ double chooseMutationChance(){
 int chooseNP(const int &populationSize){
     int np;
 
-    cout << " Choose Mutation Chance [0-" << populationSize << "]: ";
+    cout << " Choose NP value [0-" << populationSize << "]: ";
     cin >> np;
     cout << endl;
     if(np <= 0){
