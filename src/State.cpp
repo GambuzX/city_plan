@@ -90,7 +90,7 @@ uint State::createBuilding(Project * proj, int row, int col, bool updateLimits) 
         for (uint u : utilityBuildings) {
             Building & util = buildings.at(u);
             if(buildingsDistLessThanD(added, util, D)) {
-                added.addNearType(util.getProject()->getType());
+                added.addNearType(util.getProject()->getValue());
             }
         }
     }
@@ -98,7 +98,7 @@ uint State::createBuilding(Project * proj, int row, int col, bool updateLimits) 
         for (uint r : residentialBuildings) {
             Building & res = buildings.at(r);
             if(buildingsDistLessThanD(added, res, D)) {
-                added.addNearType(added.getProject()->getType());
+                res.addNearType(added.getProject()->getValue());
             }
         }
     }
@@ -252,11 +252,24 @@ vector<uint> State::getAllBuildingsIDs() const {
     return allIDs;
 }
 
+char projectChar(BuildingType type) {
+    switch (type)
+    {
+        case BuildingType::residencial:
+            return 'O';
+        case BuildingType::utility:
+            return 'X';
+        default:
+            return ' ';
+    }
+}
+
 void State::printMap() const {
     const vector<vector<uint>> & m = getCityMap();
     for (const vector<uint> & row : m) {
         for (int cell : row) {
-            cout << cell << " ";
+            if (cell == 0) cout << "  ";
+            else cout << projectChar(buildings.at(cell).getProject()->getType()) << " ";
         }
         cout << endl;
     }

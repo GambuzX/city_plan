@@ -17,10 +17,9 @@
 
 using namespace std;
 
-State hillClimbing(InputInfo * info, int maxSteps, OperatorsAccuracy accuracy) { // order buildings by occupied size / value rating ??
+State hillClimbing(InputInfo * info, int maxSteps, OperatorsAccuracy accuracy) {
 
     cout << "[+] Starting hill climbing" << endl;
-
     cout << "[+] Generating initial state" << endl;
     State currentState = generateState(info);
     int previousValue, currentValue, previousEmpty, currentEmpty;   
@@ -31,7 +30,7 @@ State hillClimbing(InputInfo * info, int maxSteps, OperatorsAccuracy accuracy) {
     int step = 0;
     while(maxSteps < 0 || step++ < maxSteps) {
             
-        cout << "[+] Searching for neighbour" << endl; //TODO better print
+        cout << "[" << step+1 << "/" << maxSteps << "] Searching for neighbour" << endl;
         State neighbour = higherValueNeighbour(currentState, accuracy);
         currentValue = neighbour.value();
         currentEmpty = neighbour.emptyCount();
@@ -134,7 +133,6 @@ State randomNeighbour(const State & state){
         newState = op->apply(false);
         int newVal = newState.value();
         if(prevValue != newVal || prevEmpty != newState.emptyCount()) {
-            cout << "Found different" << endl;
             break;
         }
     }
@@ -146,37 +144,49 @@ State randomNeighbour(const State & state){
 
 State simulatedAnnealing(InputInfo * info, int maxSteps, double maxTemperature){
 
-    State currentState = generateState(info);
-    State bestState = currentState;
+    cout << "[+] Starting Simulated Annealing" << endl;
+    cout << "[+] Generating initial state" << endl;
 
+    // current state
+    State currentState = generateState(info);
     int currentValue = currentState.value();
+    int currentEmpty = currentState.emptyCount();
+    cout << "[!] Initial state (value, emptyCells): (" << currentValue << ", " << currentEmpty << ")" << endl << endl;
+
+    // best state so far
+    State bestState = currentState;
     int bestValue = currentValue;
-    cout << "[+] Starting state: " << currentValue << endl << endl;
+    int bestEmpty = currentEmpty;
 
     for (int s = 1; s < maxSteps; s++) {
+        cout << "[" << s << "/" << maxSteps << "] Searching for neighbour" << endl;
         double temperature = maxTemperature * ((double)s / maxSteps);
 
-        cout << "[+] Searching for neighbour" << endl;
         State neighbour = randomNeighbour(currentState);
         int neighbourValue = neighbour.value();
+        int neighbourEmpty = neighbour.emptyCount();
         
         double choice = ((double)getRandomValue()) / RAND_MAX;   
         double delta = neighbourValue - currentValue;
         double acceptProb = exp(delta / temperature);
-        cout << "Evaluating neighbour choice = " << choice << ", prob = " << acceptProb << ", delta = " << delta << endl;
-        if(delta > 0 || choice < acceptProb) {
-            currentValue = neighbourValue;
+        cout << "[!] Evaluating neighbour. Delta=" << delta << ", Probability=" << acceptProb << ", Choice=" << choice << endl;
+        if(State::betterState(currentValue, currentEmpty, neighbourValue, neighbourEmpty) || choice < acceptProb) {
             currentState = neighbour;
-            cout << "[+] Found neighbour: " << currentValue << endl << endl;
-        }    
+            currentValue = neighbourValue;
+            currentEmpty = neighbourEmpty;
+            cout << "[!] Choose neighbour: (" << currentValue << ", " << currentEmpty << ")" << endl << endl;
 
-        if(currentValue > bestValue){
-            bestState = currentState;
-            bestValue = currentValue;
+            if(State::betterState(bestValue, bestEmpty, neighbourValue, neighbourEmpty)){
+                bestState = currentState;
+                bestValue = currentValue;
+                bestEmpty = neighbourEmpty;
+            }
         }
+        else cout << "[!] Skipped neighbour" << endl << endl;
     }
-    
-    cout << "Ended search with a value of " << bestValue << endl;
+
+    cout << "[!] Reached last step" << endl;
+    cout << "[!] Best value found: (" << bestValue << ", " << bestEmpty << ")" << endl;
     return bestState;
 }
 
