@@ -16,7 +16,7 @@
 
 using namespace std;
 
-State hillClimbing(InputInfo * info, bool findBestNeighbour) { // order buildings by occupied size / value rating ??
+State hillClimbing(InputInfo * info, int maxSteps, bool findBestNeighbour) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;
 
@@ -27,7 +27,8 @@ State hillClimbing(InputInfo * info, bool findBestNeighbour) { // order building
     previousEmpty = currentEmpty = currentState.emptyCount();
 
     cout << "[!] Initial state (value, emptyCells): (" << currentValue << ", " << currentEmpty << ")" << endl << endl;
-    while(1) {
+    int step = 0;
+    while(maxSteps < 0 || step++ < maxSteps) {
             
         cout << "[+] Searching for neighbour" << endl;
         State neighbour = higherValueNeighbour(currentState, findBestNeighbour);

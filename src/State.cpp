@@ -50,7 +50,6 @@ bool State::canCreateBuilding(Project * proj, int row, int col) const {
 }
 
 bool State::canCreateBuilding(Project * proj, int row, int col, bMatrix * filledPos) const {
-    //clock_t limitsStart = clock();
 
     const vector<vector<char>> & plan = proj->getPlan();
 
@@ -65,16 +64,12 @@ bool State::canCreateBuilding(Project * proj, int row, int col, bMatrix * filled
             }
         }
     }
-
-
-    //clock_t limitsEnd = clock();
-    //double el2 = double(limitsEnd - limitsStart) / CLOCKS_PER_SEC;
-    //cout << "Compare took " << el2 << endl;
     
     return true;
 }
 
 uint State::createBuilding(Project * proj, int row, int col, bool updateLimits) {
+    int D = globalInfo->maxWalkDist;
     uint ID = nextID++;
     const vector<vector<char>> & plan = proj->getPlan();
 
@@ -88,6 +83,26 @@ uint State::createBuilding(Project * proj, int row, int col, bool updateLimits) 
 
     if(updateLimits) updateMapLimitsCreate(proj, row, col);
     buildings.insert(make_pair(ID, Building(proj, row, col)));
+
+    // update buildings near list
+    Building & added = buildings.at(ID);
+    if(proj->getType() == BuildingType::residencial) {
+        for (uint u : utilityBuildings) {
+            Building & util = buildings.at(u);
+            if(buildingsDistLessThanD(added, util, D)) {
+                added.addNearType(util.getProject()->getType());
+            }
+        }
+    }
+    else if(proj->getType() == BuildingType::utility) {
+        for (uint r : residentialBuildings) {
+            Building & res = buildings.at(r);
+            if(buildingsDistLessThanD(added, res, D)) {
+                added.addNearType(added.getProject()->getType());
+            }
+        }
+    }
+
     return ID;
 }
 
@@ -128,6 +143,18 @@ Building State::removeBuilding(uint id, bool updateLimits) {
 
     if(updateLimits) updateMapLimitsRemove(b);
     buildings.erase(it);
+
+    // update buildings near list if removed an utility
+    Project * proj = b.getProject();
+    int D = globalInfo->maxWalkDist;
+    if(proj->getType() == BuildingType::utility) {
+        for (uint r : residentialBuildings) {
+            Building & res = buildings.at(r);
+            if(buildingsDistLessThanD(b, res, D)) {
+                res.removeNearType(proj->getType());
+            }
+        }
+    }
     return b;
 }
 
@@ -208,24 +235,12 @@ void State::updateMapLimitsRemove(const Building & removed) {
 
 }
 
-int State::value() const { //TODO calculate value when a building is adedd;
-    const int D = globalInfo->maxWalkDist;
-    
-    int points = 0;
+int State::value() const {    
 
-    // for all residential buildings
+    int points = 0;
     for (int rIndex : residentialBuildings) { 
         const Building & resBuilding = buildings.find(rIndex)->second;
-        unordered_set<BuildingType> seen;
-        for (int uIndex : utilityBuildings) {
-            const Building & utilBuilding = buildings.find(uIndex)->second;
-            BuildingType t = utilBuilding.getProject()->getType();
-
-            if(seen.find(t) == seen.end() && buildingsDistLessThanD(resBuilding, utilBuilding, D)) {
-                seen.insert(t);
-                points += resBuilding.getProject()->getValue();                
-            }
-        }
+        points += resBuilding.getProject()->getValue() * resBuilding.getNearTypesCount();
     }
     return points;
 }
