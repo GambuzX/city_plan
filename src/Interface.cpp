@@ -98,8 +98,8 @@ string chooseFileName(string oper){
     
     string fileName;
     bool file_exists = false;
-    if(oper =="OUTPUT")
-        fileName = true;
+    if(oper == "OUTPUT")
+        file_exists = true;
     
     do{
         cin >> fileName;
