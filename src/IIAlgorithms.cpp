@@ -96,12 +96,14 @@ State randomNeighbour(const State & state){
 
     for (Operator * op : operators) {
         cout << "[+] Applying " << op->getName() << " operator" << endl;
-        State newState = op->apply(false);
+        newState = op->apply(false);
         int newVal = newState.value();
         if(prevValue != newVal || prevEmpty != newState.emptyCount()) {
             break;
         }
     }
+
+    for(size_t i = 0; i < operators.size(); i++) delete operators[i];
 
     return newState;
 }

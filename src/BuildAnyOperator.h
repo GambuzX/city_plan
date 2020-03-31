@@ -38,6 +38,7 @@ class BuildAnyOperator : public Operator {
                             std::cout << "[*] Built  " << currProject->getID() << std::endl;
                     
                             state.createBuilding(currProject, row, col, true);
+                            updateUsedMap(map, currProject, row, col, true);
                             return state;
                         } 
                     }
