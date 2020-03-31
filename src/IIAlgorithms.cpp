@@ -117,7 +117,10 @@ State randomNeighbour(const State & state){
 State simulatedAnnealing(InputInfo * info, int maxSteps, double maxTemperature){
 
     State currentState = generateState(info);
+    State bestState = currentState;
+
     int currentValue = currentState.value();
+    int bestValue = currentValue;
     cout << "[+] Starting state: " << currentValue << endl << endl;
 
     for (int s = 1; s < maxSteps; s++) {
@@ -136,7 +139,13 @@ State simulatedAnnealing(InputInfo * info, int maxSteps, double maxTemperature){
             currentState = neighbour;
             cout << "[+] Found neighbour: " << currentValue << endl << endl;
         }    
+
+        if(currentValue > bestValue){
+            bestState = currentState;
+            bestValue = currentValue;
+        }
     }
     
-    return currentState;
+    cout << "Ended search with a value of " << bestValue << endl;
+    return bestState;
 }
