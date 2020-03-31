@@ -71,3 +71,22 @@ bool Building::beforeCol(int separation) const {
 bool Building::afterCol(int separation) const {
     return col > separation;
 }
+
+void Building::addNearType(int t) {
+    map<int,int>::iterator it = nearTypes.find(t);
+    if(it == nearTypes.end()) nearTypes.insert(make_pair(t,0));
+    nearTypes[t]++;
+}
+
+void Building::removeNearType(int t) {
+    map<int,int>::iterator it = nearTypes.find(t);
+    if(it == nearTypes.end()) return;
+
+    nearTypes[t]--;
+    it = nearTypes.find(t);
+    if(it->second <= 0) nearTypes.erase(it);
+}
+
+int Building::getNearTypesCount() const {
+    return nearTypes.size();
+}
