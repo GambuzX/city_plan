@@ -179,3 +179,38 @@ State simulatedAnnealing(InputInfo * info, int maxSteps, double maxTemperature){
     cout << "Ended search with a value of " << bestValue << endl;
     return bestState;
 }
+
+State tabuSearch(InputInfo * info){
+    State currentState = generateState(info);
+    State bestState = currentState;
+
+    int currentValue = currentState.value();
+    int bestValue = currentValue;
+    cout << "[+] Starting state: " << currentValue << endl << endl;
+
+    for (int s = 1; s < maxSteps; s++) {
+        double temperature = maxTemperature * ((double)s / maxSteps);
+
+        cout << "[+] Searching for neighbour" << endl;
+        State neighbour = randomNeighbour(currentState);
+        int neighbourValue = neighbour.value();
+        
+        double choice = ((double)getRandomValue()) / RAND_MAX;   
+        double delta = neighbourValue - currentValue;
+        double acceptProb = exp(delta / temperature);
+        cout << "Evaluating neighbour choice = " << choice << ", prob = " << acceptProb << ", delta = " << delta << endl;
+        if(delta > 0 || choice < acceptProb) {
+            currentValue = neighbourValue;
+            currentState = neighbour;
+            cout << "[+] Found neighbour: " << currentValue << endl << endl;
+        }    
+
+        if(currentValue > bestValue){
+            bestState = currentState;
+            bestValue = currentValue;
+        }
+    }
+    
+    cout << "Ended search with a value of " << bestValue << endl;
+    return bestState;
+}
