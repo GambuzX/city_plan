@@ -1,10 +1,13 @@
 #pragma once
+
+#include <map>
 #include "Project.h"
 
 class Building {
     private:
         Project * proj;
         int row, col; //left top corner
+        std::map<int, int> nearTypes;
     public:
         Building() {}
         Building(Project * proj, int row, int col) {
@@ -20,6 +23,10 @@ class Building {
         bool belowRow(int separation) const;
         bool beforeCol(int separation) const;
         bool afterCol(int separation) const;
+        const std::map<int,int> & getNearTypes() const { return nearTypes; };
+        void addNearType(int);
+        void removeNearType(int);
+        int getNearTypesCount() const;
 };
 
 
