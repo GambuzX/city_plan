@@ -255,12 +255,13 @@ vector<uint> State::getAllBuildingsIDs() const {
 char projectChar(BuildingType type) {
     switch (type)
     {
-    case BuildingType::residencial:
-        return 'O';
-    case BuildingType::utility:
-        return 'X';
+        case BuildingType::residencial:
+            return 'O';
+        case BuildingType::utility:
+            return 'X';
+        default:
+            return ' ';
     }
-    return '';
 }
 
 void State::printMap() const {
