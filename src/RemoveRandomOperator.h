@@ -15,10 +15,8 @@ class RemoveRandomOperator : public Operator {
             
             std::vector<uint> allIDs = initialState.getAllBuildingsIDs();
             uint toRemove = getRandomValue() % allIDs.size();
-            std::cout << "[*] Removed  " << toRemove << std::endl;
             State state = initialState;
             state.removeBuilding(allIDs[toRemove]);
-            std::cout << "Buildings n = " << initialState.getBuildings().size() << std::endl;
             return state;
         }
 };

@@ -28,15 +28,12 @@ class BuildRandomOperator : public Operator {
                         continue;
                     
                     size_t randomOffset = getRandomValue() % projects.size();//Starting point for the project list iteration
-                    std::cout << "[*] Found an empty cell (" << row << ", " << col << "), attempting to build one out of " << projects.size() << " candidates (starting index = " << randomOffset << ")" << std::endl;
-                    
                     // try to build all projects
                     for(size_t p = 0; p < projects.size(); p++) {
                         size_t projectIndex = (p + randomOffset) % projects.size(); 
 
                         Project * currProject = (Project *) &projects[projectIndex];
                         if(state.canCreateBuilding(currProject, row, col, &map)){
-                            std::cout << "[*] Built  " << currProject->getID() << std::endl;
                     
                             state.createBuilding(currProject, row, col, true);
                             return state;
@@ -44,7 +41,6 @@ class BuildRandomOperator : public Operator {
                     }
                 }
             }
-            std::cout << "[*] Did nothing" << std::endl;
             return initialState;
         }
 };
