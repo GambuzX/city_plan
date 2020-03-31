@@ -29,4 +29,4 @@ class Tabu {
         bool restrictedOperation(OperationType operation);
 
         bool restrictedAction(int row, int col, int projectID, OperationType OperationType);
-}
+};

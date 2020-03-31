@@ -183,7 +183,7 @@ State simulatedAnnealing(InputInfo * info, int maxSteps, double maxTemperature){
 State tabuSearch(InputInfo * info){
     State currentState = generateState(info);
     State bestState = currentState;
-
+/*
     int currentValue = currentState.value();
     int bestValue = currentValue;
     cout << "[+] Starting state: " << currentValue << endl << endl;
@@ -211,6 +211,6 @@ State tabuSearch(InputInfo * info){
         }
     }
     
-    cout << "Ended search with a value of " << bestValue << endl;
+    cout << "Ended search with a value of " << bestValue << endl;*/
     return bestState;
 }
