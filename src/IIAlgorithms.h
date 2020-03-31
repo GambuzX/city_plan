@@ -2,7 +2,7 @@
 
 #include "State.h"
 
-State hillClimbing(InputInfo * info, bool findBestNeighbour=false);
+State hillClimbing(InputInfo * info, int steps = 100, bool findBestNeighbour=false);
 State simulatedAnnealing(const State & initialState);
 State tabuSearch(const State & initialState);
 
