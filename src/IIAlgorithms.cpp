@@ -8,10 +8,11 @@
 #include "IIAlgorithms.h"
 #include "Util.h"
 #include "BuildOperator.h"
+#include "BuildRandomOperator.h"
+#include "BuildRandomPositionOperator.h"
+#include "RemoveRandomOperator.h"
 #include "RemoveOperator.h"
 #include "ReplaceOperator.h"
-#include "BuildRandomOperator.h"
-#include "RemoveRandomOperator.h"
 #include "ReplaceRandomOperator.h"
 
 using namespace std;
@@ -30,7 +31,7 @@ State hillClimbing(InputInfo * info, int maxSteps, bool findBestNeighbour) { // 
     int step = 0;
     while(maxSteps < 0 || step++ < maxSteps) {
             
-        cout << "[+] Searching for neighbour" << endl;
+        cout << "[+] Searching for neighbour" << endl; //TODO better print
         State neighbour = higherValueNeighbour(currentState, findBestNeighbour);
         currentValue = neighbour.value();
         currentEmpty = neighbour.emptyCount();
@@ -46,6 +47,9 @@ State hillClimbing(InputInfo * info, int maxSteps, bool findBestNeighbour) { // 
         previousValue = currentValue;
         previousEmpty = currentEmpty;
     }
+
+    cout << "[!] Reached last step" << endl;
+    cout << "[!] Best value found: (" << previousValue << ", " << previousEmpty << ")" << endl;
     
     return currentState;
 }
@@ -54,7 +58,7 @@ State hillClimbing(InputInfo * info, int maxSteps, bool findBestNeighbour) { // 
 State higherValueNeighbour(const State & state, bool findBest){
     // operators to apply, in sequence
     vector<Operator*> operators{
-        new BuildOperator(state),
+        new BuildRandomPositionOperator(state),
         new ReplaceOperator(state),
         new RemoveOperator(state)
     };

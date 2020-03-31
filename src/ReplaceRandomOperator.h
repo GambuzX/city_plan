@@ -8,8 +8,8 @@ class ReplaceRandomOperator : public Operator {
     public:
         ReplaceRandomOperator(const State & s) : Operator(s) {}
         virtual ~ReplaceRandomOperator() {};
-        virtual std::string getName() const { return "REPLACE ANY"; }
-        virtual std::string getActionName() const { return "replacing any"; };
+        virtual std::string getName() const { return "REPLACE RANDOM"; }
+        virtual std::string getActionName() const { return "replacing random"; };
 
         virtual State apply(bool findBest) const {
             // global vars
