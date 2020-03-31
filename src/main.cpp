@@ -64,6 +64,15 @@ int main(int argc, char * argv[]) {
             }
             case 2:{ /*SIMULATED ANNEALING*/
                 
+                cout << endl << " How many steps would you like to do?" << endl;
+                int maxSteps;
+                cin >> maxSteps;
+
+                cout << endl << " What should be the starting \"temperature\"?" << endl;
+                double temperature;
+                cin >> temperature;
+
+                finalState = simulatedAnnealing(&globalInfo, maxSteps, temperature);
                 break;
             }
             case 3:{ /*GENETIC ALGORITHM*/
