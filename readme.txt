@@ -1,5 +1,3 @@
-# city_plan
-
 City Plan - Instruções
 
 COMPILAÇÃO
