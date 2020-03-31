@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
                 
                 double elapsedTime = countTime(startTime, endTime);
 
-                printTime(" Hill Climbing", elapsedTime);
+                printTime("> Hill Climbing", elapsedTime);
 
                 break;
             }
@@ -78,7 +78,7 @@ int main(int argc, char * argv[]) {
                 
                 double elapsedTime = countTime(startTime, endTime);
 
-                printTime(" Simulated Annealing", elapsedTime);
+                printTime("> Simulated Annealing", elapsedTime);
                 break;
             }
             case 3:{ /*GENETIC ALGORITHM*/
@@ -108,7 +108,7 @@ int main(int argc, char * argv[]) {
                 
                 double elapsedTime = countTime(startTime, endTime);
 
-                printTime(" Genetic Algorithm", elapsedTime);
+                printTime("> Genetic Algorithm", elapsedTime);
                 break;
             }
             case 4:{

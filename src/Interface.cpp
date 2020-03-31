@@ -22,7 +22,7 @@ void drawLogo(){
     cout << " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
 }
 
-int getIntOption(string display_string = " Option", string invalid_string = "Option"){
+int getIntOption(string display_string = "> Option", string invalid_string = "Option"){
     int option;
     bool cinFailed;
     do
@@ -34,7 +34,7 @@ int getIntOption(string display_string = " Option", string invalid_string = "Opt
         {
             cin.clear();
             cin.ignore(100000, '\n');
-            cout << endl << " Invalid " << invalid_string << "!";
+            cout << endl << "> Invalid " << invalid_string << "!";
         }
         cout << endl << endl;
     } while (cinFailed);
@@ -54,7 +54,7 @@ double getDoubleOption(string display_string, string invalid_string){
         {
             cin.clear();
             cin.ignore(100000, '\n');
-            cout << endl << " Invalid " << invalid_string << "!";
+            cout << endl << "> Invalid " << invalid_string << "!";
         }
         cout << endl << endl;
     } while (cinFailed);
@@ -96,7 +96,7 @@ bool fileExists(string fileName){
 }
 
 string chooseFileName(string oper){
-    cout << " CHOOSE " << oper << " FILE NAME: ";
+    cout << "> CHOOSE " << oper << " FILE NAME: ";
     
     string fileName;
     bool file_exists = false;
@@ -110,8 +110,8 @@ string chooseFileName(string oper){
             file_exists = fileExists(fileName);
         
         if(!file_exists){    
-            cout << " File doesn't exist!" << endl << endl;
-            cout << " CHOOSE " << oper << " FILE NAME: ";
+            cout << "> File doesn't exist!" << endl << endl;
+            cout << "> CHOOSE " << oper << " FILE NAME: ";
         }
     }while(!file_exists);
     return fileName;
@@ -126,11 +126,11 @@ string chooseOutputFileName(){
 }
 
 bool chooseBestNeighbour(){
-    cout << endl << " Do you want to find the best neighbour?" << endl;
+    cout << endl << "> Do you want to find the best neighbour?" << endl;
         
     char bestNeighbourOption;
 
-    cout << " [Y/N] (default is N): ";
+    cout << "> [Y/N] (default is N): ";
     cin >> bestNeighbourOption;
     
     cin.clear();
@@ -138,7 +138,7 @@ bool chooseBestNeighbour(){
 
     if (cin.fail())
     {
-        cout << endl << " Invalid option!";
+        cout << endl << "> Invalid option!";
         cout << endl;
         return false;
     }
@@ -148,15 +148,15 @@ bool chooseBestNeighbour(){
         cout << endl;
         return true;
     }
-    cout << " The algorithm won't find the best neighbour..." << endl << endl;
+    cout << "> The algorithm won't find the best neighbour..." << endl << endl;
     return false;
 }
 
 int chooseMaxSteps(){
-    int maxSteps = getIntOption(" Choose Maximum Number of Steps (> 0)", "Maximum Number of Steps (Must be an int)");
+    int maxSteps = getIntOption("> Choose Maximum Number of Steps (> 0)", "Maximum Number of Steps (Must be an int)");
 
     if(maxSteps <= 0){
-        cout << " Invalid number! The maximum number of steps will be 100..." << endl << endl;
+        cout << "> Invalid number! The maximum number of steps will be 100..." << endl << endl;
         return 100;
     }
 
@@ -164,10 +164,10 @@ int chooseMaxSteps(){
 }
 
 double chooseMaxTemperature(){
-    double temperature = getDoubleOption(" Choose the starting \"temperature\" (> 0)", "Temperature (Must be a double)");
+    double temperature = getDoubleOption("> Choose the starting \"temperature\" (> 0)", "Temperature (Must be a double)");
 
     if(temperature <= 0){
-        cout << " Invalid Temperature! A temperature of 10 will be used..." << endl << endl;
+        cout << "> Invalid Temperature! A temperature of 10 will be used..." << endl << endl;
         return 10;
     }
 
@@ -175,7 +175,7 @@ double chooseMaxTemperature(){
 }
 
 OperatorsAccuracy chooseOperatorsAccuracy(){
-    cout << endl << " Choose the operators accuracy: " << endl;
+    cout << endl << "> Choose the operators accuracy: " << endl;
     cout << " \t1: Low;" << endl;
     cout << " \t2: Medium;" << endl;
     cout << " \t3: High." << endl << endl;
@@ -188,16 +188,16 @@ OperatorsAccuracy chooseOperatorsAccuracy(){
         case 2: 
             return OperatorsAccuracy::MEDIUM;
         case 3:
-            return OperatorsAccuracy::HIGH
+            return OperatorsAccuracy::HIGH;
     }
 
-    cout << " Invalid option! The accuracy of the operators will be low..." << endl << endl;
+    cout << "> Invalid option! The accuracy of the operators will be low..." << endl << endl;
 
     return OperatorsAccuracy::LOW;
 }
 
 SelectionAlgorithm chooseSelectionAlgorithm(){
-    cout << endl << " Choose the selection algorithm: " << endl;
+    cout << endl << "> Choose the selection algorithm: " << endl;
     cout << " \t1: Tournament;" << endl;
     cout << " \t2: Roullete." << endl << endl;
     
@@ -210,13 +210,13 @@ SelectionAlgorithm chooseSelectionAlgorithm(){
             return SelectionAlgorithm::Roullete;
     }
 
-    cout << " Invalid option! Tournament Algorithm will be used..." << endl << endl;
+    cout << "> Invalid option! Tournament Algorithm will be used..." << endl << endl;
 
     return SelectionAlgorithm::Tournament;
 }
 
 BreedingAlgorithm chooseBreedingAlgorithm(){
-    cout << " Choose the breeding algorithm: " << endl;
+    cout << "> Choose the breeding algorithm: " << endl;
     cout << " \t1: Horizontal Division;" << endl;
     cout << " \t2: Vertical Division;" << endl;
     cout << " \t3: Selection In Turns." << endl << endl;
@@ -232,16 +232,16 @@ BreedingAlgorithm chooseBreedingAlgorithm(){
             return BreedingAlgorithm::SelectionInTurns;
     }
 
-    cout << " Invalid option! Vertical Division will be used..." << endl << endl;
+    cout << "> Invalid option! Vertical Division will be used..." << endl << endl;
 
     return BreedingAlgorithm::VerticalDivision;
 }
 
 int choosePopulationSize(){
-    int populationSize = getIntOption(" Choose Population Size (> 0)", "Population Size (Must be an int)");
+    int populationSize = getIntOption("> Choose Population Size (> 0)", "Population Size (Must be an int)");
 
     if(populationSize <= 0){
-        cout << " Invalid size! Initial population with 100 states will be used..." << endl << endl;
+        cout << "> Invalid size! Initial population with 100 states will be used..." << endl << endl;
         return 100;
     }
 
@@ -249,10 +249,10 @@ int choosePopulationSize(){
 }
 
 int chooseGenerations(){
-    int numGenerations = getIntOption(" Choose Number of Generations (> 0)", "Number of Generations (Must be an int)");
+    int numGenerations = getIntOption("> Choose Number of Generations (> 0)", "Number of Generations (Must be an int)");
 
     if(numGenerations <= 0){
-        cout << " Invalid number! 10 generations will be used..." << endl << endl;
+        cout << "> Invalid number! 10 generations will be used..." << endl << endl;
         return 10;
     }
 
@@ -260,10 +260,10 @@ int chooseGenerations(){
 }
 
 double chooseMutationChance(){
-    double mutationChance = getDoubleOption(" Choose Mutation Chance [0-100]", "Mutation Chance (Must be a double)");
+    double mutationChance = getDoubleOption("> Choose Mutation Chance [0-100]", "Mutation Chance (Must be a double)");
 
     if(mutationChance <= 0 || mutationChance > 100){
-        cout << " Invalid Mutation Chance! A chance of 5% will be used..." << endl << endl;
+        cout << "> Invalid Mutation Chance! A chance of 5% will be used..." << endl << endl;
         return 5;
     }
 
@@ -272,14 +272,14 @@ double chooseMutationChance(){
 
 int chooseNP(const int &populationSize){
     ostringstream oss;
-    oss << " Choose NP value [0-" << populationSize << "]";
+    oss << "> Choose NP value [0-" << populationSize << "]";
     int np = getIntOption(oss.str(), "NP (Must be an int)");
 
     if(np <= 0){
-        cout << " Invalid np! NP equals to 3 will be used..." << endl << endl;
+        cout << "> Invalid np! NP equals to 3 will be used..." << endl << endl;
         return 3;
     }else if(np > populationSize){
-        cout << " Invalid np! NP equals to " << populationSize << " will be used..." << endl << endl;
+        cout << "> Invalid np! NP equals to " << populationSize << " will be used..." << endl << endl;
         return 3;
     }
 
