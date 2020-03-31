@@ -17,7 +17,7 @@
 
 using namespace std;
 
-State hillClimbing(InputInfo * info, int maxSteps, bool findBestNeighbour) { // order buildings by occupied size / value rating ??
+State hillClimbing(InputInfo * info, int maxSteps, OperatorsAccuracy accuracy) { // order buildings by occupied size / value rating ??
 
     cout << "[+] Starting hill climbing" << endl;
 
@@ -32,7 +32,7 @@ State hillClimbing(InputInfo * info, int maxSteps, bool findBestNeighbour) { // 
     while(maxSteps < 0 || step++ < maxSteps) {
             
         cout << "[+] Searching for neighbour" << endl; //TODO better print
-        State neighbour = higherValueNeighbour(currentState, findBestNeighbour);
+        State neighbour = higherValueNeighbour(currentState, accuracy);
         currentValue = neighbour.value();
         currentEmpty = neighbour.emptyCount();
 
@@ -54,14 +54,40 @@ State hillClimbing(InputInfo * info, int maxSteps, bool findBestNeighbour) { // 
     return currentState;
 }
 
+bool getAccuracyOperators(const State & state, OperatorsAccuracy accuracy, vector<Operator*> & operators) {
+    bool findBest = false;
+    switch(accuracy) {
+        case OperatorsAccuracy::LOW:
+            operators = {
+                new BuildRandomPositionOperator(state),
+                new ReplaceOperator(state),
+                new RemoveOperator(state)
+            };
+            break;
+        case OperatorsAccuracy::MEDIUM:
+            operators = {
+                new BuildOperator(state),
+                new ReplaceOperator(state),
+                new RemoveOperator(state)
+            };
+            break;
+        case OperatorsAccuracy::HIGH:
+            operators = {
+                new BuildOperator(state),
+                new ReplaceOperator(state),
+                new RemoveOperator(state)
+            };
+            findBest = true;
+            break;
+    }
+    return findBest;
+}
 
-State higherValueNeighbour(const State & state, bool findBest){
+
+State higherValueNeighbour(const State & state, OperatorsAccuracy accuracy){
     // operators to apply, in sequence
-    vector<Operator*> operators{
-        new BuildRandomPositionOperator(state),
-        new ReplaceOperator(state),
-        new RemoveOperator(state)
-    };
+    vector<Operator*> operators;
+    bool findBest = getAccuracyOperators(state, accuracy, operators);    
 
     int bestValue, bestEmpty, newVal, newEmpty;
     State bestState = state;
