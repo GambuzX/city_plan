@@ -174,6 +174,28 @@ double chooseMaxTemperature(){
     return temperature;
 }
 
+OperatorsAccuracy chooseOperatorsAccuracy(){
+    cout << endl << " Choose the operators accuracy: " << endl;
+    cout << " \t1: Low;" << endl;
+    cout << " \t2: Medium;" << endl;
+    cout << " \t3: High." << endl << endl;
+    
+    int option = getIntOption();
+
+    switch(option){
+        case 1:
+            return OperatorsAccuracy::LOW;
+        case 2: 
+            return OperatorsAccuracy::MEDIUM;
+        case 3:
+            return OperatorsAccuracy::HIGH
+    }
+
+    cout << " Invalid option! The accuracy of the operators will be low..." << endl << endl;
+
+    return OperatorsAccuracy::LOW;
+}
+
 SelectionAlgorithm chooseSelectionAlgorithm(){
     cout << endl << " Choose the selection algorithm: " << endl;
     cout << " \t1: Tournament;" << endl;

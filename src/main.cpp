@@ -53,11 +53,11 @@ int main(int argc, char * argv[]) {
         switch(option){
             case 1:{ /*HILL CLIMBING*/
                 
-                bool findBestNeighbour = chooseBestNeighbour();
                 int maxSteps = chooseMaxSteps();
+                OperatorsAccuracy accuracy = chooseOperatorsAccuracy();
 
                 clock_t startTime = clock(); 
-                finalState = hillClimbing(&globalInfo, maxSteps, findBestNeighbour);
+                finalState = hillClimbing(&globalInfo, maxSteps, accuracy);
                 clock_t endTime = clock();
                 
                 double elapsedTime = countTime(startTime, endTime);

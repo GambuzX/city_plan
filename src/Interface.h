@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "Genetic.h"
+#include "IIAlgorithms.h"
 
 #define NUM_MAX_OPTIONS 5
 
@@ -16,7 +17,7 @@ std::string chooseOutputFileName();
 bool fileExists(std::string fileName);
 
 /*Hill Climbing & Simulated Annealing Parameters*/
-bool chooseBestNeighbour();
+OperatorsAccuracy chooseOperatorsAccuracy();
 int chooseMaxSteps();
 double chooseMaxTemperature();
 
