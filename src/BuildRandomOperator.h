@@ -12,8 +12,8 @@ class BuildRandomOperator : public Operator {
     public:
         BuildRandomOperator(const State & s) : Operator(s) {}
         virtual ~BuildRandomOperator() {};
-        virtual std::string getName() const { return "BUILD ANY"; }
-        virtual std::string getActionName() const { return "building any"; };
+        virtual std::string getName() const { return "BUILD RANDOM"; }
+        virtual std::string getActionName() const { return "building random"; };
 
         virtual State apply(bool findBest) const {
             const std::vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
