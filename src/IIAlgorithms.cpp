@@ -10,9 +10,9 @@
 #include "BuildOperator.h"
 #include "RemoveOperator.h"
 #include "ReplaceOperator.h"
-#include "BuildAnyOperator.h"
+#include "BuildRandomOperator.h"
 #include "RemoveRandomOperator.h"
-#include "ReplaceAnyOperator.h"
+#include "ReplaceRandomOperator.h"
 
 using namespace std;
 
@@ -84,8 +84,8 @@ State higherValueNeighbour(const State & state, bool findBest){
 State randomNeighbour(const State & state){
     // operators to apply, in sequence
     vector<Operator*> operators{
-        new BuildAnyOperator(state),
-        new ReplaceAnyOperator(state),
+        new BuildRandomOperator(state),
+        new ReplaceRandomOperator(state),
         new RemoveRandomOperator(state)
     };
 
@@ -94,11 +94,16 @@ State randomNeighbour(const State & state){
 
     State newState = state;
 
-    for (Operator * op : operators) {
+    size_t randomOffset = getRandomValue() % operators.size();//Starting point for the operator list iteration
+
+    for (uint i = 0; i < operators.size(); ++i) {
+        size_t operatorIndex = (randomOffset +  i) % operators.size();
+        Operator *op = operators[operatorIndex];
         cout << "[+] Applying " << op->getName() << " operator" << endl;
         newState = op->apply(false);
         int newVal = newState.value();
         if(prevValue != newVal || prevEmpty != newState.emptyCount()) {
+            cout << "Found different" << endl;
             break;
         }
     }
@@ -108,14 +113,14 @@ State randomNeighbour(const State & state){
     return newState;
 }
 
-State simulatedAnnealing(InputInfo * info, int maxSteps){
+State simulatedAnnealing(InputInfo * info, int maxSteps, double maxTemperature){
 
     State currentState = generateState(info);
     int currentValue = currentState.value();
     cout << "[+] Starting state: " << currentValue << endl << endl;
 
-    for (int s = 1; s <= maxSteps; s++) {
-        double temperature = (double)maxSteps / s;
+    for (int s = 1; s < maxSteps; s++) {
+        double temperature = maxTemperature * ((double)s / maxSteps);
 
         cout << "[+] Searching for neighbour" << endl;
         State neighbour = randomNeighbour(currentState);
@@ -124,8 +129,8 @@ State simulatedAnnealing(InputInfo * info, int maxSteps){
         double choice = ((double)getRandomValue()) / RAND_MAX;   
         double delta = neighbourValue - currentValue;
         double acceptProb = exp(delta / temperature);
-        cout << "Evaluating neighbour choice = " << choice << ", prob = " << acceptProb << endl;
-        if(delta > 0 || choice >= acceptProb) {
+        cout << "Evaluating neighbour choice = " << choice << ", prob = " << acceptProb << ", delta = " << delta << endl;
+        if(delta > 0 || choice < acceptProb) {
             currentValue = neighbourValue;
             currentState = neighbour;
             cout << "[+] Found neighbour: " << currentValue << endl << endl;

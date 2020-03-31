@@ -1,11 +1,11 @@
 #include <iostream>
 #include "Genetic.h"
 #include "BuildOperator.h"
-#include "BuildAnyOperator.h"
+#include "BuildRandomOperator.h"
 #include "RemoveOperator.h"
 #include "RemoveRandomOperator.h"
 #include "ReplaceOperator.h"
-#include "ReplaceAnyOperator.h"
+#include "ReplaceRandomOperator.h"
 
 #include <set>
 #include <algorithm>
@@ -155,9 +155,9 @@ State mutate(State & s) {
         new BuildOperator(s),
         new ReplaceOperator(s),
         new RemoveOperator(s),
-        new BuildAnyOperator(s),
+        new BuildRandomOperator(s),
         new RemoveRandomOperator(s),
-        new ReplaceAnyOperator(s)
+        new ReplaceRandomOperator(s)
     };
     State mutated = operators[rand() % operators.size()]->apply();
     for (size_t i = 0; i < operators.size(); i++) delete operators[i];
