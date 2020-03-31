@@ -16,11 +16,15 @@ class ReplaceRandomOperator : public Operator {
             bMatrix map = initialState.getFilledPositions();
             const std::vector<Project> & projects = initialState.getGlobalInfo()->bProjects;
             std::vector<uint> buildingsIDs = initialState.getAllBuildingsIDs();
-
+            
+            if(!buildingsIDs.size()){
+                return initialState;
+            }
+            
             // best choice variables    
             State state = initialState;
          
-            size_t removeRandOffset = rand() % buildingsIDs.size();
+            size_t removeRandOffset = getRandomValue() % buildingsIDs.size();
             for (size_t i = 0; i < buildingsIDs.size(); i++) {
                 uint b = buildingsIDs[(i + removeRandOffset) % buildingsIDs.size()]; // apply offset
 
@@ -30,9 +34,11 @@ class ReplaceRandomOperator : public Operator {
                 updateUsedMap(map, removed.getProject(), row, col, false);
 
                 // replace building project
-                size_t projRandOffset = rand() % projects.size();
+                size_t projRandOffset = getRandomValue() % projects.size(); //Starting point for the project list iteration
                 for(size_t p = 0; p < projects.size(); p++) {
-                    Project * proj = (Project*) &projects[(p + projRandOffset) % projects.size()]; // apply offset
+                    size_t projectIndex = (p + projRandOffset) % projects.size(); 
+
+                    Project * proj = (Project*) &projects[projectIndex]; 
                     if(proj->getID() == removed.getProject()->getID()) continue;
 
                     // check if can create

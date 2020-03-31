@@ -11,4 +11,4 @@ std::vector<T> concatenate_vectors(const std::vector<T> &v1, const std::vector<T
 }
 
 
-uint getRandomValue();
+int getRandomValue();
