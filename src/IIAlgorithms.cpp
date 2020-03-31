@@ -10,9 +10,9 @@
 #include "BuildOperator.h"
 #include "RemoveOperator.h"
 #include "ReplaceOperator.h"
-#include "BuildAnyOperator.h"
+#include "BuildRandomOperator.h"
 #include "RemoveRandomOperator.h"
-#include "ReplaceAnyOperator.h"
+#include "ReplaceRandomOperator.h"
 
 using namespace std;
 
@@ -84,8 +84,8 @@ State higherValueNeighbour(const State & state, bool findBest){
 State randomNeighbour(const State & state){
     // operators to apply, in sequence
     vector<Operator*> operators{
-        new BuildAnyOperator(state),
-        new ReplaceAnyOperator(state),
+        new BuildRandomOperator(state),
+        new ReplaceRandomOperator(state),
         new RemoveRandomOperator(state)
     };
 
@@ -99,6 +99,7 @@ State randomNeighbour(const State & state){
         newState = op->apply(false);
         int newVal = newState.value();
         if(prevValue != newVal || prevEmpty != newState.emptyCount()) {
+            cout << "Found different" << endl;
             break;
         }
     }
@@ -124,7 +125,7 @@ State simulatedAnnealing(InputInfo * info, int maxSteps){
         double choice = ((double)rand()) / RAND_MAX;   
         double delta = neighbourValue - currentValue;
         double acceptProb = exp(-delta / temperature);
-        cout << "Evaluating neighbour choice = " << choice << ", prob = " << acceptProb << endl;
+        cout << "Evaluating neighbour choice = " << choice << ", prob = " << acceptProb << ", delta = " << delta << endl;
         if(delta > 0 || choice > acceptProb) {
             currentValue = neighbourValue;
             currentState = neighbour;
