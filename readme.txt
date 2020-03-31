@@ -2,6 +2,7 @@ City Plan - Instruções
 
 COMPILAÇÃO
 - foi incluído um ficheiro Makefile, bastando correr 'make' para compilar o programa.
+- o código deve estar numa pasta '/src' em relaçao ao diretório onde está o Makefile.
 
 EXECUÇÃO
 - './city_plan <caminho do ficheiro de input *opcional>'
